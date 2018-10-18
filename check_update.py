@@ -39,6 +39,7 @@ def compare(latest_file=None):
     # Checks if something changed between old_page and current_page
     if new_hash == old_hash:
         print("No new Vertretungsplan version found.")
+        convert.main()
         sys.exit(0)
         return False
     else:
