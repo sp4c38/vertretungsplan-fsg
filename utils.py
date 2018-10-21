@@ -13,7 +13,8 @@ import pull_plan
 
 def get_config():
     config = configparser.ConfigParser()
-    config.read('config.ini')
+    config_path = os.path.expanduser('~/.config/vertretungsplan/config.ini')
+    config.read(config_path)
     return config
 
 def get_cache_file_path():

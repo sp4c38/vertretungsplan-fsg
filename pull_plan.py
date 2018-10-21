@@ -60,7 +60,8 @@ def safe_page(page):
 
 def get_creds():
     credentials = configparser.ConfigParser()
-    credentials.read('creds.ini')
+    config_path = os.path.expanduser('~/.config/vertretungsplan/creds.ini')
+    credentials.read(config_path)
     return credentials.get('creds', 'user'), credentials.get('creds', 'password')
 
 

@@ -93,7 +93,7 @@ def parse_footer_row(row=None, fh=None):
 
 
 def main():
-    print("\nConverting...")
+    print("Converting...")
     latest_file = utils.get_latest_file(print_result=False)
     raw_file_path = latest_file
 
@@ -184,8 +184,9 @@ def main():
     for row in rows:
         
         i += row_count 
-        sys.stdout.write("\r{}%".format(int(i)))
-        sys.stdout.flush()
+        if not os.environ.get('UNATTENDED', False):
+            sys.stdout.write("\r{}%".format(int(i)))
+            sys.stdout.flush()
 
         cells = row.findChildren(['td', 'p'])
         
@@ -205,11 +206,11 @@ def main():
         
         time.sleep(0.01)
 
+    date = datetime.datetime.now()
+    print("--- Session ended: ", date, " ---") # example: --- Session ended: 2018-10-21 11:00:01.875420 ---
     print()
     fh.close()
-
-
-
+    
 
 if __name__ == '__main__':
     main()
