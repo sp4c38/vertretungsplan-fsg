@@ -167,6 +167,8 @@ def main():
     fh.write("\n")
     fh.write(header_teacher)
     fh.write("\n")
+    fh.write("\nKlasse | Fach | Vertretung durch: (Fach) | statt")
+    fh.write("\n")
 
     stand_in_data = defaultdict(list)
 
@@ -206,9 +208,7 @@ def main():
         
         time.sleep(0.01)
 
-    date = datetime.datetime.now()
-    print("--- Session ended: ", date, " ---") # example: --- Session ended: 2018-10-21 11:00:01.875420 ---
-    print()
+
     fh.close()
     
 

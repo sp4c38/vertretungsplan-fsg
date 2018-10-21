@@ -14,8 +14,6 @@ import requests
 
 import utils
 
-__version__ = '0.1'
-__authors__ = ('Léon Becker <lb@space8.me>', 'Frank Becker <fb@alien8.de>')
 
 def get_weekday():
     today = arrow.utcnow()

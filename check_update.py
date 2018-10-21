@@ -15,10 +15,13 @@ import pathlib
 import convert
 import utils
 import pull_plan
+import vp_bot
 
 
 user = getpass.getuser()
 
+__version__ = '0.1'
+__authors__ = ('Léon Becker <lb@space8.me>', 'Frank Becker <fb@alien8.de>')
 
 def compare(latest_file=None):
     """ Creates a hash of the latest Vertretungsplan and a hash 
@@ -39,36 +42,49 @@ def compare(latest_file=None):
 
     # Checks if something changed between old_page and current_page
     if new_hash == old_hash:
-        print("No new Vertretungsplan version found.")
+        print("--> No new Vertretungsplan version found.")
         convert.main()
-        sys.exit(0)
         return False
     else:
-        print("New Vertretungsplan version found!")
+        print("--> New Vertretungsplan version found!")
         pull_plan.main()
         convert.main()
+        vp_bot.main()
         return True
 
 
 def check_requirements():
+    creds_path = os.path.expanduser('~/.config/vertretungsplan/creds.ini')
+    config_path = os.path.expanduser('~/.config/vertretungsplan/config.ini')
+    telegram_path = os.path.expanduser('~/.config/vertretungsplan/telegram.ini')
+
+    if not os.path.isfile(creds_path):
+        sys.stderr.write("E: Could not find creds.ini in \'~/.config/vertretungsplan/creds.ini\'.\n")
+        sys.exit(1)
+
+    if not os.path.isfile(config_path):
+        sys.stderr.write("E: Could not find config.ini in \'~/.config/vertretungsplan/config.ini\'.\n")
+        sys.exit(1)
+    if not os.path.isfile(config_path):
+        sys.stderr.write("E: Could not find config.ini in \'~/.config/vertretungsplan/telegram.ini\'.\n")
+        sys.exit(1)
+
     backup_path = utils.get_raw_html_file_path()
     pathlib.Path(os.path.dirname(backup_path)).mkdir(parents=True, exist_ok=True)
 
     cache_file_path = utils.get_cache_file_path()
     pathlib.Path(os.path.dirname(cache_file_path)).mkdir(parents=True, exist_ok=True)
 
-    creds_config_path = os.path.expanduser('~/.config/vertretungsplan/config.ini')
-    if not os.path.isfile(creds_config_path):
-        sys.stderr.write("E: Could not find creds.ini.\n")
-        sys.exit(1)
-
-
 def main():
     date = datetime.datetime.now()
     print("--- Session started: ", date, " ---") # example: --- Session started: 2018-10-21 11:00:01.875420  ---
+    
     check_requirements()
     latest_file = utils.get_latest_file()
     compare(latest_file)
+
+    date = datetime.datetime.now()
+    print("--- Session ended: ", date, " ---\n") # example: --- Session ended: 2018-10-21 11:00:01.875420 ---
 
 
 if __name__ == "__main__":
