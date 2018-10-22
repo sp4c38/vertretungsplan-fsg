@@ -92,10 +92,13 @@ def parse_footer_row(row=None, fh=None):
     fh.write('\n')
 
 
-def main():
+def main(file=None):
     print("Converting...")
-    latest_file = utils.get_latest_file(print_result=False)
-    raw_file_path = latest_file
+
+    raw_file_path = file
+    if file == None:
+        latest_file = utils.get_latest_file(print_result=False)
+        raw_file_path = latest_file
 
     cache_file_path = utils.get_cache_file_path()
     
