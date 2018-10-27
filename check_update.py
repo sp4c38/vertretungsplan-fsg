@@ -23,6 +23,7 @@ user = getpass.getuser()
 __version__ = '0.1'
 __authors__ = ('Léon Becker <lb@space8.me>', 'Frank Becker <fb@alien8.de>')
 
+
 def compare(latest_file=None):
     """ Creates a hash of the latest Vertretungsplan and a hash 
     of the newest Vertretungsplan (from the web)
@@ -59,14 +60,20 @@ def check_requirements():
     telegram_path = os.path.expanduser('~/.config/vertretungsplan/telegram.ini')
 
     if not os.path.isfile(creds_path):
-        sys.stderr.write("E: Could not find creds.ini in \'~/.config/vertretungsplan/creds.ini\'.\n")
+        sys.stderr.write(
+            "E: Could not find creds.ini in \'~/.config/vertretungsplan/creds.ini\'.\n"
+        )
         sys.exit(1)
 
     if not os.path.isfile(config_path):
-        sys.stderr.write("E: Could not find config.ini in \'~/.config/vertretungsplan/config.ini\'.\n")
+        sys.stderr.write(
+            "E: Could not find config.ini in \'~/.config/vertretungsplan/config.ini\'.\n"
+        )
         sys.exit(1)
     if not os.path.isfile(config_path):
-        sys.stderr.write("E: Could not find config.ini in \'~/.config/vertretungsplan/telegram.ini\'.\n")
+        sys.stderr.write(
+            "E: Could not find config.ini in \'~/.config/vertretungsplan/telegram.ini\'.\n"
+        )
         sys.exit(1)
 
     backup_path = utils.get_raw_html_file_path()
@@ -75,16 +82,21 @@ def check_requirements():
     cache_file_path = utils.get_cache_file_path()
     pathlib.Path(os.path.dirname(cache_file_path)).mkdir(parents=True, exist_ok=True)
 
+
 def main():
     date = datetime.datetime.now()
-    print("--- Session started: ", date, " ---") # example: --- Session started: 2018-10-21 11:00:01.875420  ---
-    
+    print(
+        "--- Session started: ", date, " ---"
+    )  # example: --- Session started: 2018-10-21 11:00:01.875420  ---
+
     check_requirements()
     latest_file = utils.get_latest_file()
     compare(latest_file)
 
     date = datetime.datetime.now()
-    print("--- Session ended: ", date, " ---\n") # example: --- Session ended: 2018-10-21 11:00:01.875420 ---
+    print(
+        "--- Session ended: ", date, " ---\n"
+    )  # example: --- Session ended: 2018-10-21 11:00:01.875420 ---
 
 
 if __name__ == "__main__":
