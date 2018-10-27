@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 
-import os
-import re
-import time
-import sys
 import datetime
+import os
 import pathlib
+import re
+import string
+import sys
+import time
 
 
 from collections import defaultdict
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 from bs4 import BeautifulSoup
 
 import teacher_list
@@ -22,6 +23,41 @@ class StandInData(NamedTuple):
     would_have_hour: str
     instead_of: str
     insted_of_statt: str
+
+
+def cleanup_string(non_ascii_string):
+    """Clean up string to only contain printable characters"""
+    printable = set(string.printable)
+    return "".join([s for s in non_ascii_string if s in printable])
+
+
+def get_date_from_page(page: bytes) -> Optional[datetime.date]:
+    """Return a datetime object of the date string found in page"""
+    soup = BeautifulSoup(page, features="html.parser")
+    vp_table = find_vp_table(soup)
+    if not vp_table:
+        return None
+    rows = vp_table.findChildren(['tr'])
+    if not rows:
+        print("Could not find any row in the table {my_table} while checking the date",
+              file=sys.stderr)
+        return None
+
+    # Parse header
+    row = rows.pop(0)
+    paragraphs = row.findAll('p')
+    if not paragraphs:
+        return False
+    head = paragraphs[0].text
+    date_match = re.match(r'.*(?P<day>\d{2})\.(?P<month>\d{1,2})\.(?P<year>\d{2,4})$', head[-10:])
+    if not date_match:
+        return False
+    date_match = {k: int(v) for k, v in date_match.groupdict().items()}
+    if date_match['year'] < 2000:
+        # Add the current century
+        date_match['year'] = date_match['year'] + 2000
+
+    return datetime.date(**date_match)
 
 
 def parse_row(row=None, fh=None):
@@ -96,11 +132,22 @@ def parse_footer_row(row=None, fh=None):
     fh.write('\n')
 
 
+def find_vp_table(soup_page):
+    """Return the Vertretungsplan table"""
+    tables = soup_page.findChildren('table', attrs={'class': ['MsoNormalTable', 'tr']})
+
+    if not tables:
+        return False
+
+    vp_table = tables[0]
+    return vp_table
+
+
 def main(file=None):
     print("Converting...")
 
     raw_file_path = file
-    if file == None:
+    if file is None:
         latest_file = utils.get_latest_file(print_result=False)
         raw_file_path = latest_file
 
@@ -114,16 +161,14 @@ def main(file=None):
         fp = fp.read()
         soup = BeautifulSoup(fp, features="html.parser")
 
-    tables = soup.findChildren('table', attrs={'class': ['MsoNormalTable', 'tr']})
-
-    if not tables:
+    my_table = find_vp_table(soup)
+    if not my_table:
         print(
             "Could not find the MsoNormalTable table in the HTML document.\n",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    my_table = tables[0]
     rows = my_table.findChildren(['tr'])
     if not rows:
         print("Could not find any row in the table {my_table}", file=sys.stderr)
@@ -150,7 +195,7 @@ def main(file=None):
                 [
                     header_date[:start_char],
                     days_list.get(day),
-                    header_date[start_char + len(day) :],
+                    header_date[start_char + len(day):],
                 ]
             )
         else:
@@ -171,7 +216,7 @@ def main(file=None):
                 [
                     header_teacher[:start_char],
                     teacher_list.teacher_list.get(teacher),
-                    header_teacher[start_char + len(teacher) :],
+                    header_teacher[start_char + len(teacher):],
                 ]
             )
     else:

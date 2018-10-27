@@ -17,6 +17,8 @@ import utils
 import pull_plan
 import vp_bot
 
+from convert import get_date_from_page
+
 
 user = getpass.getuser()
 
@@ -38,6 +40,14 @@ def compare(latest_file=None):
     # Pulls current page from the web and replaces '\r\n' with '\n'
     current_page = pull_plan.get_page()
     current_page = current_page.text.replace("\r\n", "\n").encode("utf-8")
+
+    # Parse the header to find the date of the page. It might be that the date
+    # is older than the file name makes us think.
+    page_date = get_date_from_page(current_page)
+    today = datetime.date.today()
+    if not page_date >= today:
+        print(f"The date found in the header of the VP HTML page is: {page_date}. But today is: {today}")
+        return False
 
     # Creates hash of current page and old page to compare if something changed
     old_hash = hashlib.sha256(old_page).hexdigest()
