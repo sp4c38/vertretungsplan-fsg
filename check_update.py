@@ -25,9 +25,12 @@ __authors__ = ('Léon Becker <lb@space8.me>', 'Frank Becker <fb@alien8.de>')
 
 
 def compare(latest_file=None):
-    """ Creates a hash of the latest Vertretungsplan and a hash 
+    """ Creates a hash of the latest Vertretungsplan and a hash
     of the newest Vertretungsplan (from the web)
     """
+
+    if not latest_file:
+        return False
 
     # Pulls newest created file
     old_page = open(latest_file).read().encode("utf-8")
@@ -50,7 +53,7 @@ def compare(latest_file=None):
         print("--> New Vertretungsplan version found!")
         pull_plan.main()
         convert.main()
-        vp_bot.main()
+        # vp_bot.main()
         return True
 
 
