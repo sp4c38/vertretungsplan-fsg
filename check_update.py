@@ -67,7 +67,7 @@ def compare(latest_file=None):
         print("--> New Vertretungsplan version found!")
         pull_plan.main()
         convert.main()
-        # vp_bot.main()
+        vp_bot.main()
         return True
 
 
