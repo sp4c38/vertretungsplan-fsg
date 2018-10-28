@@ -44,8 +44,12 @@ def compare(latest_file=None):
     # Parse the header to find the date of the page. It might be that the date
     # is older than the file name makes us think.
     page_date = get_date_from_page(current_page)
+    if not page_date:
+        print(f"Did not find a date in the header of the HTML Vertretungsplan page.")
+        return False
+
     today = datetime.date.today()
-    if not page_date >= today:
+    if page_date < today:
         print(f"The date found in the header of the VP HTML page is: {page_date}. But today is: {today}")
         return False
 

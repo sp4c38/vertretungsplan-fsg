@@ -32,7 +32,9 @@ def cleanup_string(non_ascii_string):
 
 
 def get_date_from_page(page: bytes) -> Optional[datetime.date]:
-    """Return a datetime object of the date string found in page"""
+    """Return a datetime object of the date string found in page.
+    If no date is found return None.
+    """
     soup = BeautifulSoup(page, features="html.parser")
     vp_table = find_vp_table(soup)
     if not vp_table:
@@ -47,12 +49,20 @@ def get_date_from_page(page: bytes) -> Optional[datetime.date]:
     row = rows.pop(0)
     paragraphs = row.findAll('p')
     if not paragraphs:
-        return False
+        return None
     head = paragraphs[0].text
-    date_match = re.match(r'.*(?P<day>\d{2})\.(?P<month>\d{1,2})\.(?P<year>\d{2,4})$', head[-10:])
+    date_match = re.search(r'.*\b(?P<day>\d{1,2})[. ]+(?P<month>\d{1,2})[. ]+(?P<year>\d{2,4})',
+                           head[-12:])
     if not date_match:
-        return False
+        return None
     date_match = {k: int(v) for k, v in date_match.groupdict().items()}
+
+    # The above dict comprehension means the following:
+    # new_date_match = {}
+    # for k, v in date_match.groupdict().items():
+    #     new_date_match[k] = int(v)
+    # date_match = new_date_match
+
     if date_match['year'] < 2000:
         # Add the current century
         date_match['year'] = date_match['year'] + 2000
@@ -140,6 +150,7 @@ def find_vp_table(soup_page):
         return False
 
     vp_table = tables[0]
+
     return vp_table
 
 
