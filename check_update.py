@@ -49,8 +49,10 @@ def compare(latest_file=None):
         return False
 
     today = datetime.date.today()
+    # example: page_date = 20 today = 21, checks if 20 < 21
     if page_date < today:
-        print(f"The date found in the header of the VP HTML page is: {page_date}. But today is: {today}")
+        print(f"The date found in the header of the VP HTML page is: {page_date}. "
+            f"But today is: {today}")
         return False
 
     # Creates hash of current page and old page to compare if something changed
