@@ -87,9 +87,9 @@ def check_requirements():
             "E: Could not find config.ini in \'~/.config/vertretungsplan/config.ini\'.\n"
         )
         sys.exit(1)
-    if not os.path.isfile(config_path):
+    if not os.path.isfile(telegram_path):
         sys.stderr.write(
-            "E: Could not find config.ini in \'~/.config/vertretungsplan/telegram.ini\'.\n"
+            "E: Could not find telegram.ini in \'~/.config/vertretungsplan/telegram.ini\'.\n"
         )
         sys.exit(1)
 
