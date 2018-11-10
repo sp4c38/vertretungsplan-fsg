@@ -71,64 +71,58 @@ def get_date_from_page(page: bytes) -> Optional[datetime.date]:
 
 
 def parse_row(row=None, fh=None):
-    lesson_number = ""
-    klasse = ""
-    instead_of = ""
-
     data = row.findAll('p')
 
-    lesson_number = data[0]
-    klasse = data[1]
-    would_have_hour = data[2]
-    instead_of = data[3]
-    insted_of_statt = data[4]
+    lesson_number = " ".join(data[0].strings)
+    klasse = " ".join(data[1].strings)
+    would_have_hour = " ".join(data[2].strings)
+    instead_of = " ".join(data[3].strings)
+    insted_of_statt = " ".join(data[4].strings)
 
-    items_dict = {
-        lesson_number: lesson_number.string,
-        klasse: klasse.string,
-        would_have_hour: would_have_hour.string,
-        instead_of: instead_of.string,
-        insted_of_statt: insted_of_statt.string,
-    }
-
-    if lesson_number.string == '\xa0':
+    if lesson_number == '\xa0':
         pass
     else:
-        data = items_dict.get(lesson_number)
+        if "\n" in lesson_number:
+            lesson_number = lesson_number.replace("\n", "")
         fh.write("\n")
+        data = (lesson_number + ":")
         fh.write(data)
-        fh.write(":\n")
-    if klasse.string == '\xa0':
+        fh.write("\n")
+    if klasse == '\xa0':
         pass
     else:
-        data = items_dict.get(klasse)
-        fh.write(data)
+        if "\n" in klasse:
+            klasse = klasse.replace("\n", "")
+        fh.write(klasse)
         fh.write(' | ')
-    if would_have_hour.string == '\xa0':
+    if would_have_hour == '\xa0':
         pass
     else:
-        data = items_dict.get(would_have_hour)
-        fh.write(data)
+        if "\n" in would_have_hour:
+            would_have_hour = would_have_hour.replace("\n", "")
+        fh.write(would_have_hour)
         fh.write(' | ')
-    if instead_of.string == '\xa0':
+    if instead_of == '\xa0':
         pass
     else:
-        data = items_dict.get(instead_of)
-        fh.write(data)
+        if "\n" in instead_of:
+            instead_of = instead_of.replace("\n", "")
+        fh.write(instead_of)
         fh.write(" ")
-    if instead_of.string == '\xa0':
+    if instead_of == '\xa0':
         pass
     else:
-        data = items_dict.get(insted_of_statt)
-        fh.write(data)
+        if "\n" in insted_of_statt:
+            insted_of_statt = insted_of_statt.replace("\n", "")
+        fh.write(insted_of_statt)
         fh.write("\n")
 
     return StandInData(
-        lesson_number.string,
-        klasse.string,
-        would_have_hour.string,
-        instead_of.string,
-        insted_of_statt.string,
+        lesson_number,
+        klasse,
+        would_have_hour,
+        instead_of,
+        insted_of_statt,
     )
 
 
