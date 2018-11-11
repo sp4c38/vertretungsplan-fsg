@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import datetime
+import emoji
 import os
 import pathlib
 import re
@@ -185,6 +186,7 @@ def main(file=None):
 
     header_date = paragraphs[0].find('span')
     header_date = header_date.string.replace('\n', '')
+    
     days_list = {
         'montag': 'Mo',
         'dienstag': 'Di',
@@ -206,6 +208,7 @@ def main(file=None):
         else:
             pass
 
+    header_date = (header_date + emoji.emojize(" :grinning_face:", use_aliases=True))
     header_classes = paragraphs[1].find('span')
     header_classes = header_classes.string
 
