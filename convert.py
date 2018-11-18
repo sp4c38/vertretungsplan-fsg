@@ -22,8 +22,8 @@ class StandInData(NamedTuple):
     lesson_number: str
     klasse: str
     would_have_hour: str
-    instead_of: str
-    insted_of_statt: str
+    replacement: str
+    instead_of_lesson: str
 
 
 def cleanup_string(non_ascii_string):
@@ -77,8 +77,8 @@ def parse_row(row=None, fh=None):
     lesson_number = " ".join(data[0].strings)
     klasse = " ".join(data[1].strings)
     would_have_hour = " ".join(data[2].strings)
-    instead_of = " ".join(data[3].strings)
-    insted_of_statt = " ".join(data[4].strings)
+    replacement = " ".join(data[3].strings)
+    instead_of_lesson = " ".join(data[4].strings)
 
     if lesson_number == '\xa0':
         pass
@@ -103,27 +103,32 @@ def parse_row(row=None, fh=None):
             would_have_hour = would_have_hour.replace("\n", "")
         fh.write(would_have_hour)
         fh.write(' | ')
-    if instead_of == '\xa0':
+
+    if replacement == '\xa0':
         pass
     else:
-        if "\n" in instead_of:
-            instead_of = instead_of.replace("\n", "")
-        fh.write(instead_of)
-        fh.write(" ")
-    if instead_of == '\xa0':
+        if "\n" in replacement:
+            replacement = replacement.replace("\n", "")
+        fh.write(replacement)
+        if instead_of_lesson == '\xa0':
+            fh.write("\n")
+
+    if instead_of_lesson == '\xa0':
         pass
     else:
-        if "\n" in insted_of_statt:
-            insted_of_statt = insted_of_statt.replace("\n", "")
-        fh.write(insted_of_statt)
+        if "\n" in instead_of_lesson:
+            instead_of_lesson = instead_of_lesson.replace("\n", "")
+        
+        fh.write(" | ")
+        fh.write(instead_of_lesson)
         fh.write("\n")
 
     return StandInData(
         lesson_number,
         klasse,
         would_have_hour,
-        instead_of,
-        insted_of_statt,
+        replacement,
+        instead_of_lesson,
     )
 
 
@@ -131,10 +136,11 @@ def parse_footer_row(row=None, fh=None):
     paragraphs = row.findAll('p')
     footer_data = paragraphs[0]
     footer_data = footer_data.string.replace('\n', '')
-
     fh.write('\n')
     fh.write(footer_data)
     fh.write('\n')
+    
+    return footer_data
 
 
 def find_vp_table(soup_page):
@@ -261,19 +267,16 @@ def main(file=None):
         cells = row.findChildren(['td', 'p'])
 
         if len(row) == 11:
-
             row_stand_in_data = parse_row(row=row, fh=fh)
 
             lesson_number = row_stand_in_data.lesson_number
             klasse = row_stand_in_data.klasse
             would_have_hour = row_stand_in_data.would_have_hour
-            instead_of = row_stand_in_data.instead_of
-            insted_of_statt = row_stand_in_data.insted_of_statt
-
+            replacement = row_stand_in_data.replacement
+            instead_of_lesson = row_stand_in_data.instead_of_lesson
             stand_in_data[lesson_number].append(row_stand_in_data)
         elif len(row) == 3:
             parse_footer_row(row=row, fh=fh)
-
         time.sleep(0.01)
 
     fh.close()
