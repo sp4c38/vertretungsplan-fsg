@@ -17,6 +17,7 @@ from bs4 import BeautifulSoup
 import teacher_list
 import utils
 
+represen_classes = []
 
 class StandInData(NamedTuple):
     lesson_number: str
@@ -72,6 +73,7 @@ def get_date_from_page(page: bytes) -> Optional[datetime.date]:
 
 
 def parse_row(row=None, fh=None):
+    global represen_classes
     data = row.findAll('p')
 
     lesson_number = " ".join(data[0].strings)
@@ -92,6 +94,7 @@ def parse_row(row=None, fh=None):
     if klasse == '\xa0':
         pass
     else:
+        represen_classes += [klasse] 
         if "\n" in klasse:
             klasse = klasse.replace("\n", "")
         fh.write(klasse)
@@ -154,38 +157,7 @@ def find_vp_table(soup_page):
 
     return vp_table
 
-
-def main(file=None):
-    print("Converting...")
-
-    raw_file_path = file
-    if file is None:
-        latest_file = utils.get_latest_file(print_result=False)
-        raw_file_path = latest_file
-
-    cache_file_path = utils.get_cache_file_path()
-
-    pathlib.Path(os.path.dirname(cache_file_path)).mkdir(parents=True, exist_ok=True)
-
-    fh = open(cache_file_path, 'w')
-
-    with open(raw_file_path) as fp:
-        fp = fp.read()
-        soup = BeautifulSoup(fp, features="html.parser")
-
-    my_table = find_vp_table(soup)
-    if not my_table:
-        print(
-            "Could not find the MsoNormalTable table in the HTML document.\n",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    rows = my_table.findChildren(['tr'])
-    if not rows:
-        print("Could not find any row in the table {my_table}", file=sys.stderr)
-        sys.exit(1)
-
+def parse_header(rows=None, fh=None):
     # Parse header
     row = rows.pop(0)
     paragraphs = row.findAll('p')
@@ -247,6 +219,40 @@ def main(file=None):
 
     stand_in_data = defaultdict(list)
 
+def main(file=None):
+    global represen_classes
+    print("Converting...")
+
+    raw_file_path = file
+    if file is None:
+        latest_file = utils.get_latest_file(print_result=False)
+        raw_file_path = latest_file
+
+    cache_file_path = utils.get_cache_file_path()
+
+    pathlib.Path(os.path.dirname(cache_file_path)).mkdir(parents=True, exist_ok=True)
+
+    fh = open(cache_file_path, 'w')
+
+    with open(raw_file_path) as fp:
+        fp = fp.read()
+        soup = BeautifulSoup(fp, features="html.parser")
+
+    my_table = find_vp_table(soup)
+    if not my_table:
+        print(
+            "Could not find the MsoNormalTable table in the HTML document.\n",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    rows = my_table.findChildren(['tr'])
+    if not rows:
+        print("Could not find any row in the table {my_table}", file=sys.stderr)
+        sys.exit(1)
+
+    parse_header(rows=rows, fh=fh)
+
     # removes Klasse; Fach; Vertretung durch: (Fach); statt
     row = rows.pop(0)
     i = 0
@@ -274,13 +280,15 @@ def main(file=None):
             would_have_hour = row_stand_in_data.would_have_hour
             replacement = row_stand_in_data.replacement
             instead_of_lesson = row_stand_in_data.instead_of_lesson
-            stand_in_data[lesson_number].append(row_stand_in_data)
+
         elif len(row) == 3:
             parse_footer_row(row=row, fh=fh)
         time.sleep(0.01)
 
-    fh.close()
+    represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+    fh.write(represen_classes)
 
+    fh.close()
 
 if __name__ == '__main__':
     main()
