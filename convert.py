@@ -219,6 +219,40 @@ def parse_header(rows=None, fh=None):
 
     stand_in_data = defaultdict(list)
 
+def convert(rows=None, fh=None):
+    # removes Klasse; Fach; Vertretung durch: (Fach); statt
+    row = rows.pop(0)
+    i = 0
+    row_count = 0
+
+    for row in rows:
+        row_count += 1
+
+    row_count = 100.5 / row_count
+
+    for row in rows:
+
+        i += row_count
+        if not os.environ.get('UNATTENDED', False):
+            sys.stdout.write("\r{}%".format(int(i)))
+            sys.stdout.flush()
+
+        cells = row.findChildren(['td', 'p'])
+
+        if len(row) == 11:
+            row_stand_in_data = parse_row(row=row, fh=fh)
+
+            lesson_number = row_stand_in_data.lesson_number
+            klasse = row_stand_in_data.klasse
+            would_have_hour = row_stand_in_data.would_have_hour
+            replacement = row_stand_in_data.replacement
+            instead_of_lesson = row_stand_in_data.instead_of_lesson
+
+        elif len(row) == 3:
+            parse_footer_row(row=row, fh=fh)
+        time.sleep(0.01)
+
+
 def main(file=None):
     global represen_classes
     print("Converting...")
@@ -252,38 +286,7 @@ def main(file=None):
         sys.exit(1)
 
     parse_header(rows=rows, fh=fh)
-
-    # removes Klasse; Fach; Vertretung durch: (Fach); statt
-    row = rows.pop(0)
-    i = 0
-    row_count = 0
-
-    for row in rows:
-        row_count += 1
-
-    row_count = 100.5 / row_count
-
-    for row in rows:
-
-        i += row_count
-        if not os.environ.get('UNATTENDED', False):
-            sys.stdout.write("\r{}%".format(int(i)))
-            sys.stdout.flush()
-
-        cells = row.findChildren(['td', 'p'])
-
-        if len(row) == 11:
-            row_stand_in_data = parse_row(row=row, fh=fh)
-
-            lesson_number = row_stand_in_data.lesson_number
-            klasse = row_stand_in_data.klasse
-            would_have_hour = row_stand_in_data.would_have_hour
-            replacement = row_stand_in_data.replacement
-            instead_of_lesson = row_stand_in_data.instead_of_lesson
-
-        elif len(row) == 3:
-            parse_footer_row(row=row, fh=fh)
-        time.sleep(0.01)
+    convert(rows=rows, fh=fh)
 
     represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
     fh.write(represen_classes)
