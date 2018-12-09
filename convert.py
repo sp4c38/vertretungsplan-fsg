@@ -19,14 +19,6 @@ import utils
 
 represen_classes = []
 
-class StandInData(NamedTuple):
-    lesson_number: str
-    klasse: str
-    would_have_hour: str
-    replacement: str
-    instead_of_lesson: str
-
-
 def cleanup_string(non_ascii_string):
     """Clean up string to only contain printable characters"""
     printable = set(string.printable)
@@ -72,8 +64,9 @@ def get_date_from_page(page: bytes) -> Optional[datetime.date]:
     return datetime.date(**date_match)
 
 
-def parse_row(row=None, fh=None):
+def parse_row(row=None, fh=None, get_vp_classes=False):
     global represen_classes
+
     data = row.findAll('p')
 
     lesson_number = " ".join(data[0].strings)
@@ -81,6 +74,14 @@ def parse_row(row=None, fh=None):
     would_have_hour = " ".join(data[2].strings)
     replacement = " ".join(data[3].strings)
     instead_of_lesson = " ".join(data[4].strings)
+
+    if get_vp_classes == True:
+        if klasse == "\xa0":
+            return None
+        else:
+            if "\n" in klasse:
+                klasse = klasse.replace("\n", "")
+            return klasse
 
     if lesson_number == '\xa0':
         pass
@@ -94,7 +95,6 @@ def parse_row(row=None, fh=None):
     if klasse == '\xa0':
         pass
     else:
-        represen_classes += [klasse] 
         if "\n" in klasse:
             klasse = klasse.replace("\n", "")
         fh.write(klasse)
@@ -122,18 +122,11 @@ def parse_row(row=None, fh=None):
         if "\n" in instead_of_lesson:
             instead_of_lesson = instead_of_lesson.replace("\n", "")
         
-        fh.write(" | ")
+        fh.write(" | statt -> ")
         fh.write(instead_of_lesson)
         fh.write("\n")
 
-    return StandInData(
-        lesson_number,
-        klasse,
-        would_have_hour,
-        replacement,
-        instead_of_lesson,
-    )
-
+    return
 
 def parse_footer_row(row=None, fh=None):
     paragraphs = row.findAll('p')
@@ -158,6 +151,7 @@ def find_vp_table(soup_page):
     return vp_table
 
 def parse_header(rows=None, fh=None):
+    global represen_classes
     # Parse header
     row = rows.pop(0)
     paragraphs = row.findAll('p')
@@ -208,16 +202,31 @@ def parse_header(rows=None, fh=None):
     else:
         pass
 
+    for row in rows:
+        cells = row.findChildren(['td', 'p'])
+
+        if len(row) == 11:
+            klasse = parse_row(row=row, fh=fh, get_vp_classes=True)
+            if klasse == None:
+                pass
+            else:
+                if klasse.lower() == "klasse":
+                    continue  
+                else:
+                    represen_classes += [klasse]
+        elif len(row) == 3:
+            pass
+    represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+    
     fh.write(header_date)
     fh.write("\n")
     fh.write(header_classes)
     fh.write("\n")
     fh.write(header_teacher)
     fh.write("\n")
-    fh.write("\nKlasse | Fach | Vertretung durch: (Fach) | statt")
+    fh.write(represen_classes)
+    fh.write("\n\nKlasse | Fach | Vertretung durch: (Fach) | statt")
     fh.write("\n")
-
-    stand_in_data = defaultdict(list)
 
 def convert(rows=None, fh=None):
     # removes Klasse; Fach; Vertretung durch: (Fach); statt
@@ -240,14 +249,7 @@ def convert(rows=None, fh=None):
         cells = row.findChildren(['td', 'p'])
 
         if len(row) == 11:
-            row_stand_in_data = parse_row(row=row, fh=fh)
-
-            lesson_number = row_stand_in_data.lesson_number
-            klasse = row_stand_in_data.klasse
-            would_have_hour = row_stand_in_data.would_have_hour
-            replacement = row_stand_in_data.replacement
-            instead_of_lesson = row_stand_in_data.instead_of_lesson
-
+            parse_row(row=row, fh=fh)
         elif len(row) == 3:
             parse_footer_row(row=row, fh=fh)
         time.sleep(0.01)
@@ -287,9 +289,6 @@ def main(file=None):
 
     parse_header(rows=rows, fh=fh)
     convert(rows=rows, fh=fh)
-
-    represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
-    fh.write(represen_classes)
 
     fh.close()
 
