@@ -216,6 +216,11 @@ def parse_header(rows=None, fh=None):
                     represen_classes += [klasse]
         elif len(row) == 3:
             pass
+
+    # Removes all classes which are >1 times in represen_classes
+    represen_classes = set(represen_classes)
+    represen_classes = list(represen_classes)
+
     represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
     
     fh.write(header_date)
