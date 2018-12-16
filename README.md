@@ -1,7 +1,2 @@
-# vp-fsg
-
-Requirements:
-- python package: beautifulsoup4
-- python package: arrow
-- python package: requests
-- creds.ini, config.ini and telegram.ini have to be located in ~/.config/vertretungsplan
+# vertretungsplan-fsg ...
+is a tool which was created to pull the "vertretungsplan" from the fsg school homepage. It's mainly programed in python.
