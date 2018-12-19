@@ -58,7 +58,7 @@ def compare(latest_file=None):
     # Creates hash of current page and old page to compare if something changed
     old_hash = hashlib.sha256(old_page).hexdigest()
     new_hash = hashlib.sha256(current_page).hexdigest()
-    print("Created hash: ", "\nold_hash= ", old_hash, "\nnew_hash= ", new_hash)
+    print("old_hash= ", old_hash, "\nnew_hash= ", new_hash)
 
     # Checks if something changed between old_page and current_page
     if new_hash == old_hash:

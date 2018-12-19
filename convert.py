@@ -259,16 +259,17 @@ def convert(rows=None, fh=None):
             parse_footer_row(row=row, fh=fh)
         time.sleep(0.01)
 
+#def ():
 
 def main(file=None):
     global represen_classes
-    print("Converting...")
-
+    print("converting...")
+    
     raw_file_path = file
+
     if file is None:
         latest_file = utils.get_latest_file(print_result=False)
         raw_file_path = latest_file
-
     cache_file_path = utils.get_cache_file_path()
 
     pathlib.Path(os.path.dirname(cache_file_path)).mkdir(parents=True, exist_ok=True)
@@ -295,6 +296,7 @@ def main(file=None):
     parse_header(rows=rows, fh=fh)
     convert(rows=rows, fh=fh)
 
+    # Closes fh file from editing process
     fh.close()
 
 if __name__ == '__main__':
