@@ -18,20 +18,29 @@ def get_chat_id():
     credentials.read(token_path)
     return credentials.get('telegram', 'chat_id')
 
+def send_message(bot_token=None, chat_id=None, message=None):
+    if bot_token == None:
+        return
+    if chat_id == None:
+        chat_id = get_chat_id()
+    if message == None:
+        return
+
+    bot = telepot.Bot(bot_token)
+    print("Sending message...")
+    bot.sendMessage(chat_id, text=message)
+    print("--> Message sent.")
+
+def read_latest_converted():
+    cache_file_path = utils.get_cache_file_path()
+    with open(cache_file_path) as f:
+        vp_converted = f.read()
+    send_message(bot_token=get_token() ,chat_id=get_chat_id(), message=vp_converted)
+
 def main():
     bot_token = get_token()
     bot = telepot.Bot(bot_token)
-
-    cache_file_path = utils.get_cache_file_path()
-    with open(cache_file_path) as f:
-        data = f.read()
-    
-    chat_id = get_chat_id()
-    print("\nSending message...")
-    bot.sendMessage(chat_id, text=data)
-    print("--> Message sent.")
-
-
+    read_latest_converted()
 
 if __name__ == '__main__':
     main()
