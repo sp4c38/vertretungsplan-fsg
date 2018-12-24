@@ -27,9 +27,9 @@ def send_message(bot_token=None, chat_id=None, message=None):
         return
 
     bot = telepot.Bot(bot_token)
-    print("Sending message...")
+    print("--> sending message...")
     bot.sendMessage(chat_id, text=message)
-    print("--> Message sent.")
+    print("--> message sent.")
 
 def read_latest_converted():
     cache_file_path = utils.get_cache_file_path()
