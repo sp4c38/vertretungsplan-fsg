@@ -75,6 +75,7 @@ def parse_row(row=None, fh=None, get_vp_classes=False):
     replacement = " ".join(data[3].strings)
     instead_of_lesson = " ".join(data[4].strings)
 
+    # Only gets classes (school classes) which have representation
     if get_vp_classes == True:
         if klasse == "\xa0":
             return None
@@ -139,19 +140,31 @@ def parse_footer_row(row=None, fh=None):
     return footer_data
 
 
-def find_vp_table(soup_page):
+def find_vp_table(soup_page=None):
     """Return the Vertretungsplan table"""
+    # soup_page is the full html page embeded in soup
     tables = soup_page.findChildren('table', attrs={'class': ['MsoNormalTable', 'tr']})
-
+    
     if not tables:
-        return False
+        print(
+            "Could not find the MsoNormalTable table in the HTML document.\n",
+            file=sys.sterr)
+        sys.exit(1)
 
+    # Just want to have first table, if there are >1 table it will not be the
+    # one which will be converted
     vp_table = tables[0]
 
     return vp_table
 
 def parse_header(rows=None, fh=None):
     global represen_classes
+
+    if rows is None:
+        print("Err: no rows found.")
+
+    if fh is None:
+        print("Err: fh not found.")
     # Parse header
     row = rows.pop(0)
     paragraphs = row.findAll('p')
@@ -211,7 +224,7 @@ def parse_header(rows=None, fh=None):
                 pass
             else:
                 if klasse.lower() == "klasse":
-                    continue  
+                    pass  
                 else:
                     represen_classes += [klasse]
         elif len(row) == 3:
@@ -219,8 +232,9 @@ def parse_header(rows=None, fh=None):
 
     # Removes all classes which are >1 times in represen_classes
     represen_classes = set(represen_classes)
+    # Converts represen_classes to list
     represen_classes = list(represen_classes)
-
+    
     represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
     
     fh.write(header_date)
@@ -259,43 +273,44 @@ def convert(rows=None, fh=None):
             parse_footer_row(row=row, fh=fh)
         time.sleep(0.01)
 
-#def ():
-
-def main(file=None):
-    global represen_classes
-    print("converting...")
+def find_table(latest_file=None):
     
-    raw_file_path = file
-
-    if file is None:
-        latest_file = utils.get_latest_file(print_result=False)
-        raw_file_path = latest_file
-    cache_file_path = utils.get_cache_file_path()
-
-    pathlib.Path(os.path.dirname(cache_file_path)).mkdir(parents=True, exist_ok=True)
-
-    fh = open(cache_file_path, 'w')
-
-    with open(raw_file_path) as fp:
+    if latest_file is None:
+        latest_file = utils.get_latest_file(print_result=False) 
+    
+    with open(latest_file) as fp:
         fp = fp.read()
         soup = BeautifulSoup(fp, features="html.parser")
 
     my_table = find_vp_table(soup)
-    if not my_table:
-        print(
-            "Could not find the MsoNormalTable table in the HTML document.\n",
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     rows = my_table.findChildren(['tr'])
     if not rows:
         print("Could not find any row in the table {my_table}", file=sys.stderr)
         sys.exit(1)
+    return rows
 
+def find_raw_html_file(raw_file_path=None):
+
+    cache_file_path = utils.get_cache_file_path()
+
+    pathlib.Path(os.path.dirname(cache_file_path)).mkdir(parents=True, exist_ok=True)
+
+    return cache_file_path
+
+def main(file=None):
+    global represen_classes
+    print("converting...")
+    
+    cache_file_path = find_raw_html_file(raw_file_path=file)
+
+    fh = open(cache_file_path, 'w')
+    rows = find_table()
+    
     parse_header(rows=rows, fh=fh)
+    
     convert(rows=rows, fh=fh)
-
+    # import IPython;IPython.embed();sys.exit()
     # Closes fh file from editing process
     fh.close()
 

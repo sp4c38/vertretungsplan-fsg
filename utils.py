@@ -21,9 +21,10 @@ def get_cache_file_path():
     config = get_config()
 
     cache_path = os.path.join(config.get('storage', 'base_dir'),
-                              config.get('storage', 'cache_dir'))
+                              config.get('storage', 'cache_dir'),
+                              'converted.txt')
     cache_path = os.path.expanduser(cache_path)
-    cache_path = os.path.join(cache_path, 'converted.txt')
+    
     return cache_path
 
 def get_raw_html_file_path(date=None):
