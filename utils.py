@@ -11,6 +11,13 @@ from datetime import datetime
 
 import pull_plan
 
+def get_telegram_config_data():
+    telegram_config = configparser.ConfigParser()
+    telegram_config_path = os.path.expanduser('~/.config/vertretungsplan/telegram.ini')
+    telegram_config.read(telegram_config_path)
+    return telegram_config
+
+
 def get_config():
     config = configparser.ConfigParser()
     config_path = os.path.expanduser('~/.config/vertretungsplan/config.ini')
@@ -58,8 +65,7 @@ def get_latest_file(print_result=True):
     # Handels if there are no files in todays_path
     if not list_of_files:
         print(f"No files found in {todays_path}")
-        pull_plan.main()
-        list_of_files = glob.glob(os.path.join(todays_path, '*'))
+        return
 
     latest_file = sorted(list_of_files, key=os.path.getctime, reverse=True)[0]
 
