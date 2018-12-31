@@ -147,8 +147,7 @@ def find_vp_table(soup_page=None):
     
     if not tables:
         print(
-            "Could not find the MsoNormalTable table in the HTML document.\n",
-            file=sys.sterr)
+            "Could not find the MsoNormalTable table in the HTML document.\n")
         sys.exit(1)
 
     # Just want to have first table, if there are >1 table it will not be the
@@ -277,7 +276,6 @@ def find_table(latest_file=None):
     
     if latest_file is None:
         latest_file = utils.get_latest_file(print_result=False) 
-    
     with open(latest_file) as fp:
         fp = fp.read()
         soup = BeautifulSoup(fp, features="html.parser")
@@ -295,7 +293,7 @@ def find_raw_html_file(raw_file_path=None):
     cache_file_path = utils.get_cache_file_path()
 
     pathlib.Path(os.path.dirname(cache_file_path)).mkdir(parents=True, exist_ok=True)
-
+    
     return cache_file_path
 
 def main(file=None):
@@ -303,14 +301,12 @@ def main(file=None):
     print("converting...")
     
     cache_file_path = find_raw_html_file(raw_file_path=file)
-
     fh = open(cache_file_path, 'w')
     rows = find_table()
     
     parse_header(rows=rows, fh=fh)
     
     convert(rows=rows, fh=fh)
-    # import IPython;IPython.embed();sys.exit()
     # Closes fh file from editing process
     fh.close()
 
