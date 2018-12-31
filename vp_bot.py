@@ -18,12 +18,20 @@ def get_chat_id():
     credentials.read(token_path)
     return credentials.get('telegram', 'chat_id')
 
-def send_message(bot_token=None, chat_id=None, message=None):
+def send_message(bot_token=None, chat_id=None, message=None, telegram_config=None):
+    if telegram_config == None:
+        telegram_config = utils.get_telegram_config_data()
+    
     if bot_token == None:
-        return
+        bot_token = telegram_config.get('telegram', 'bot_token')    
     if chat_id == None:
-        chat_id = get_chat_id()
+        chat_id = telegram_config.get('telegram', 'chat_id')
+   
     if message == None:
+        print("\'message\' is None")
+        return
+    if not message:
+        print("\'message\' has no content")
         return
 
     bot = telepot.Bot(bot_token)
@@ -35,12 +43,13 @@ def read_latest_converted():
     cache_file_path = utils.get_cache_file_path()
     with open(cache_file_path) as f:
         vp_converted = f.read()
-    send_message(bot_token=get_token() ,chat_id=get_chat_id(), message=vp_converted)
+    return vp_converted
 
 def main():
-    bot_token = get_token()
-    bot = telepot.Bot(bot_token)
-    read_latest_converted()
+    latest_converted = read_latest_converted()
+    """ The function 'send_message' sends the message, and (if not given) gets
+    the latest converted file, chat id, bot token and telegram config data """
+    send_message(message=latest_converted)
 
 if __name__ == '__main__':
     main()
