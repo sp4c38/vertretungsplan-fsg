@@ -35,10 +35,9 @@ def send_message(bot_token=None, chat_id=None, message=None, telegram_config=Non
         return
 
     bot = telepot.Bot(bot_token)
-    print("--> sending message...")
     bot.sendMessage(chat_id, text=message)
-    print("--> message sent.")
-
+    print("--> message successfully sent")
+    
 def read_latest_converted():
     cache_file_path = utils.get_cache_file_path()
     with open(cache_file_path) as f:
