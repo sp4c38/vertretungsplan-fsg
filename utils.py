@@ -59,13 +59,15 @@ def get_raw_html_file_path(date=None):
 def get_latest_file(print_result=True):
 
     todays_path = os.path.dirname(get_raw_html_file_path())
-    
+
     list_of_files = glob.glob(os.path.join(todays_path, '*'))
     
     # Handels if there are no files in todays_path
     if not list_of_files:
         print(f"No files found in {todays_path}")
-        return
+        print("Getting newest vertretungsplan...")
+        pull_plan.main()
+        list_of_files = glob.glob(os.path.join(todays_path, '*'))
 
     latest_file = sorted(list_of_files, key=os.path.getctime, reverse=True)[0]
 

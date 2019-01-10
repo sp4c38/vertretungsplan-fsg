@@ -32,7 +32,7 @@ def compare(latest_file=None):
     """
 
     if not latest_file:
-        return False
+        latest_file = utils.get_latest_file()
 
     # Pulls newest created file
     old_page = open(latest_file).read().encode("utf-8")
@@ -58,7 +58,7 @@ def compare(latest_file=None):
     # Creates hash of current page and old page to compare if something changed
     old_hash = hashlib.sha256(old_page).hexdigest()
     new_hash = hashlib.sha256(current_page).hexdigest()
-    print("old_hash= ", old_hash, "\nnew_hash= ", new_hash)
+    #print("old hash= ", old_hash, "\nnew hash= ", new_hash)
 
     # Checks if something changed between old_page and current_page
     if new_hash == old_hash:
@@ -80,18 +80,18 @@ def check_requirements():
 
     if not os.path.isfile(creds_path):
         sys.stderr.write(
-            "E: Could not find creds.ini in \'~/.config/vertretungsplan/creds.ini\'.\n"
+            f"No creds.ini file in: {creds_path}\n"
         )
         sys.exit(1)
 
     if not os.path.isfile(config_path):
         sys.stderr.write(
-            "E: Could not find config.ini in \'~/.config/vertretungsplan/config.ini\'.\n"
+            f"No config.ini file in: {config_path}\n"
         )
         sys.exit(1)
     if not os.path.isfile(telegram_path):
         sys.stderr.write(
-            "E: Could not find telegram.ini in \'~/.config/vertretungsplan/telegram.ini\'.\n"
+            f"No telegram.ini file in: {telegram_path}\n"
         )
         sys.exit(1)
 
