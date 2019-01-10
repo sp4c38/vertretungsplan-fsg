@@ -65,9 +65,7 @@ def get_latest_file(print_result=True):
     # Handels if there are no files in todays_path
     if not list_of_files:
         print(f"No files found in {todays_path}")
-        print("Getting newest vertretungsplan...")
-        pull_plan.main()
-        list_of_files = glob.glob(os.path.join(todays_path, '*'))
+        return
 
     latest_file = sorted(list_of_files, key=os.path.getctime, reverse=True)[0]
 
