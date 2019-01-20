@@ -156,6 +156,29 @@ def find_vp_table(soup_page=None):
 
     return vp_table
 
+
+def sort_class_names(unsorted):
+    """Return a list of the unsorted class names."""
+
+    classes = []
+    for class_name in represen_classes:
+
+        level = re.search('\d+', class_name)
+        if not level:
+            continue
+        level = int(level.group())
+
+        letter = re.search(r'[a-d]+', class_name)
+        if letter:
+            letter = letter.group()
+        else:
+            letter = ""
+
+        classes.append((level, letter))
+    
+    return ["{}{}".format(e[0], e[1]) for e in sorted(classes)]
+
+
 def parse_header(rows=None, fh=None):
     global represen_classes
 
@@ -234,7 +257,9 @@ def parse_header(rows=None, fh=None):
     # Converts represen_classes to list
     represen_classes = list(represen_classes)
     
+    represen_classes = sort_class_names(represen_classes)
     represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+
     
     fh.write(header_date)
     fh.write("\n")
