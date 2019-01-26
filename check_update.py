@@ -56,23 +56,23 @@ def compare(latest_file=None):
     # Creates hash of current page and old page to compare if something changed
     if latest_file:
         old_hash = hashlib.sha256(old_page).hexdigest()
+    
     new_hash = hashlib.sha256(current_page).hexdigest()
-    #print("old hash= ", old_hash, "\nnew hash= ", new_hash)
 
     # Checks if something changed between old_page and current_page
     if latest_file:
         if new_hash == old_hash:
-            print("--> No new Vertretungsplan version found.")
+            print("-> no new Vertretungsplan version found.")
             convert.main()
             return False
         else:
-            print("--> New Vertretungsplan version found!")
+            print("-> new Vertretungsplan version found!")
             pull_plan.main()
             convert.main()
             vp_bot.main()
             return True
     else:
-        print("--> Getting new Vertretungsplan version.")
+        print("-> pulling newest vertretungsplan version.")
         pull_plan.main()
         convert.main()
         vp_bot.main()
