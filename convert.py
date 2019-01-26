@@ -91,8 +91,14 @@ def parse_row(row=None, fh=None, get_vp_classes=False):
             lesson_number = lesson_number.replace("\n", "")
         fh.write("\n")
         data = (lesson_number + ":")
-        fh.write(data)
-        fh.write("\n")
+        is_replacement = any(
+            [e and e != '\xa0' for e in [klasse, replacement,
+                                         would_have_hour, instead_of_lesson]])
+        if is_replacement:
+            fh.write(data)
+            fh.write("\n")
+        else:
+            fh.write("Keine Vertretung: " + lesson_number + "\n")
     if klasse == '\xa0':
         pass
     else:
@@ -127,7 +133,6 @@ def parse_row(row=None, fh=None, get_vp_classes=False):
         fh.write(instead_of_lesson)
         fh.write("\n")
 
-    return
 
 def parse_footer_row(row=None, fh=None):
     paragraphs = row.findAll('p')
@@ -257,37 +262,23 @@ def parse_header(rows=None, fh=None):
     # Converts represen_classes to list
     represen_classes = list(represen_classes)
     
-    represen_classes = sort_class_names(represen_classes)
-    represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+    if represen_classes:
+        represen_classes = sort_class_names(represen_classes)
+        represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
 
-    
-    fh.write(header_date)
-    fh.write("\n")
-    fh.write(header_classes)
-    fh.write("\n")
-    fh.write(header_teacher)
-    fh.write("\n")
-    fh.write(represen_classes)
-    fh.write("\n\nKlasse | Fach | Vertretung durch: (Fach) | statt")
-    fh.write("\n")
+
+    fh.write(header_date + "\n")
+    fh.write(header_classes + "\n")
+    fh.write(header_teacher + "\n")
+    if represen_classes:
+        fh.write(represen_classes + "\n")
+    fh.write("\n\nKlasse | Fach | Vertretung durch: (Fach) | statt\n")
 
 def convert(rows=None, fh=None):
     # removes Klasse; Fach; Vertretung durch: (Fach); statt
     row = rows.pop(0)
-    i = 0
-    row_count = 0
 
     for row in rows:
-        row_count += 1
-
-    row_count = 100.5 / row_count
-
-    for row in rows:
-
-        i += row_count
-        if not os.environ.get('UNATTENDED', False):
-            sys.stdout.write("\r{}%".format(int(i)))
-            sys.stdout.flush()
 
         cells = row.findChildren(['td', 'p'])
 
@@ -300,7 +291,9 @@ def convert(rows=None, fh=None):
 def find_table(latest_file=None):
     
     if latest_file is None:
-        latest_file = utils.get_latest_file(print_result=False) 
+        print("no latets_file found, please run check_update.py")
+        sys.exit()
+
     with open(latest_file) as fp:
         fp = fp.read()
         soup = BeautifulSoup(fp, features="html.parser")
@@ -323,11 +316,11 @@ def find_raw_html_file(raw_file_path=None):
 
 def main(file=None):
     global represen_classes
-    print("converting...")
-    
+    latest_file = utils.get_latest_file(print_result=False) 
+
     cache_file_path = find_raw_html_file(raw_file_path=file)
     fh = open(cache_file_path, 'w')
-    rows = find_table()
+    rows = find_table(latest_file)
     
     parse_header(rows=rows, fh=fh)
     
