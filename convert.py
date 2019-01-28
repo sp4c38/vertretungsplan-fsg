@@ -317,8 +317,14 @@ def find_raw_html_file(raw_file_path=None):
 def main(file=None):
     global represen_classes
     latest_file = utils.get_latest_file(print_result=False) 
+    if not latest_file:
+        print("Didn't find latest file.")
 
-    cache_file_path = find_raw_html_file(raw_file_path=file)
+    if file:
+        cache_file_path = find_raw_html_file(raw_file_path=file)
+    else:
+        cache_file_path = find_raw_html_file(latest_file)
+        
     fh = open(cache_file_path, 'w')
     rows = find_table(latest_file)
     

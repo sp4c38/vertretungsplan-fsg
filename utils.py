@@ -63,22 +63,18 @@ def get_latest_file(print_result=True):
     if os.path.exists(todays_path):
         pass
     else:
-        if print_result == False:
-            print(f"utils.py -> \'{todays_path}\' not found.")
-        return None
+        pathlib.Path(todays_path).mkdir(exist_ok=True, parents=True)
+        print(f"Created \'{todays_path}\'\nbecause it didn't exist.")
     
     list_of_files = glob.glob(os.path.join(todays_path, '*'))
     
-    # Handels if there are no files in todays_path
+    # Handels error if there are no files in list_of_files
     if not list_of_files:
-        print(f"utils.py -> no files found in: ", todays_path)
         return None
 
     latest_file = sorted(list_of_files, key=os.path.getctime, reverse=True)[0]
 
     if print_result == True:
         print("Latest created file: ", latest_file)
-    else:
-        pass
     
     return latest_file
