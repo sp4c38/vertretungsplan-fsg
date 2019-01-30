@@ -264,7 +264,7 @@ def parse_header(rows=None, fh=None):
     
     if represen_classes:
         represen_classes = sort_class_names(represen_classes)
-        represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+        represen_classes = ("\nVertretung für: " + ", ".join(represen_classes))
 
 
     fh.write(header_date + "\n")
@@ -272,7 +272,7 @@ def parse_header(rows=None, fh=None):
     fh.write(header_teacher + "\n")
     if represen_classes:
         fh.write(represen_classes + "\n")
-    fh.write("\n\nKlasse | Fach | Vertretung durch: (Fach) | statt\n")
+    fh.write("\n-> Klasse | Fach | Vertretung durch: (Fach) | statt\n")
 
 def convert(rows=None, fh=None):
     # removes Klasse; Fach; Vertretung durch: (Fach); statt
