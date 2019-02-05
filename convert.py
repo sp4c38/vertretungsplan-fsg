@@ -98,7 +98,7 @@ def parse_row(row=None, fh=None, get_vp_classes=False):
             fh.write(data)
             fh.write("\n")
         else:
-            fh.write("Keine Vertretung: " + lesson_number + "\n")
+            fh.write("Keine Vertretung für die" + lesson_number + "\n")
     if klasse == '\xa0':
         pass
     else:
