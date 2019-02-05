@@ -26,6 +26,7 @@ def send_message(bot_token=None, chat_id=None, message=None, telegram_config=Non
         bot_token = telegram_config.get('telegram', 'bot_token')    
     if chat_id == None:
         chat_id = telegram_config.get('telegram', 'chat_id')
+        chat_id2 = telegram_config.get('telegram', 'chat_id2')
    
     if message == None:
         print("\'message\' is None")
@@ -36,6 +37,7 @@ def send_message(bot_token=None, chat_id=None, message=None, telegram_config=Non
 
     bot = telepot.Bot(bot_token)
     bot.sendMessage(chat_id, text=message)
+    bot.sendMessage(chat_id2, text=message)
     print("--> message successfully sent")
     
 def read_latest_converted():
