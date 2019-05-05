@@ -11,20 +11,65 @@ import hashlib
 import datetime
 import sys
 import pathlib
+import re
+
+from typing import NamedTuple, Optional
+from bs4 import BeautifulSoup
+from convert import get_rows
 
 import convert
 import utils
 import pull_plan
 import vp_bot
 
-from convert import get_date_from_page
-
-
 user = getpass.getuser()
 
 __version__ = '0.1'
 __authors__ = ('Léon Becker <lb@space8.me>', 'Frank Becker <fb@alien8.de>')
 
+
+def get_date_from_page(page: bytes) -> Optional[datetime.date]:
+    """Return a datetime object of the date string found in page.
+    If no date is found return None.
+    """
+    page_read = open(page, 'r');page_read = page_read.read()
+    soup = BeautifulSoup(page_read, features="html.parser")
+    
+    vp_table = get_rows(file2conv=page, no_dict=True)
+    
+    if not vp_table:
+        return None
+    
+    rows = vp_table.findChildren(['tr'])
+    
+    if not rows:
+        print("Could not find any row in the table {my_table} while checking the date",
+              file=sys.stderr)
+        return None
+
+    # Parse header
+    row = rows.pop(0)
+    paragraphs = row.findAll('p')
+    if not paragraphs:
+        return None
+    head = paragraphs[0].text
+    date_match = re.search(r'.*\b(?P<day>\d{1,2})[. ]+(?P<month>\d{1,2})[. ]+(?P<year>\d{2,4})',
+                           head[-12:])
+    if not date_match:
+        return None
+    date_match = {k: int(v) for k, v in date_match.groupdict().items()}
+
+    # The above dict comprehension means the following:
+    # new_date_match = {}
+    # for k, v in date_match.groupdict().items():
+    #     new_date_match[k] = int(v)
+    # date_match = new_date_match
+
+    if date_match['year'] < 2000:
+        # Add the current century
+        date_match['year'] = date_match['year'] + 2000
+
+    return datetime.date(**date_match)
 
 def compare(latest_file=None):
     """ Creates a hash of the latest Vertretungsplan and a hash
@@ -41,7 +86,7 @@ def compare(latest_file=None):
 
     # Parse the header to find the date of the page. It might be that the date
     # is older than the file name makes us think.
-    page_date = get_date_from_page(current_page)
+    page_date = get_date_from_page(latest_file)
     if not page_date:
         print(f"Did not find a date in the header of the HTML Vertretungsplan page.")
         return False
@@ -75,7 +120,7 @@ def compare(latest_file=None):
         print("-> pulling newest vertretungsplan version.")
         pull_plan.main()
         convert.main()
-        vp_bot.main()
+#        vp_bot.main()
         return True
 
 def check_requirements():
@@ -119,7 +164,7 @@ def main():
 
     date = datetime.datetime.now()
     print(
-        "--- Session ended: ", date, " ---\n"
+        "--- Session ended: ", date, " ---"
     )  # example: --- Session ended: 2018-10-21 11:00:01.875420 ---
 
 

@@ -3,3 +3,5 @@ creds.ini
 telegram.ini
 run.sh
 teacher_list.py
+old_files
+vpbot_handle_commands.py
