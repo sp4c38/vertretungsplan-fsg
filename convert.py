@@ -35,7 +35,7 @@ def get_rows(file2conv=None, no_dict=False):
     if not tables:
         print("Could not find the MsoNormalTable table in the document.")
         sys.exit(1)
-    
+
     table = tables[0]
     if no_dict is False:
         rows = table.findChildren(['tr'])
@@ -72,7 +72,6 @@ def check_file_2_conv(file=None):
 def main(file_2_convert=None):
     # ! conv = convert
     file_2_convert = check_file_2_conv(file=file_2_convert)
-    print(file_2_convert)
     print(f"Converting file: \'{file_2_convert}\'")    
     
     # Gets output file ((with config) (~/.config/vertretungsplan by default))
