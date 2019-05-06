@@ -159,7 +159,7 @@ def main():
 
     date = datetime.datetime.now()
     print(
-        "--- Session ended: ", date, " ---"
+        "--- Session ended: ", date, " ---\n"
     )  # example: --- Session ended: 2018-10-21 11:00:01.875420 ---
 
 
