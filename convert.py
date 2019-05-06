@@ -15,20 +15,6 @@ def get_rows(file2conv=None, no_dict=False):
         print("No file provided to get rows.")
         sys.exit()
 
-    if file2conv:
-        # if isinstance(file2conv, str) --> This checks if file2conv is a string
-        if isinstance(file2conv, str):
-            file2conv = open(file2conv, 'r')
-
-        if os.path.isfile(file2conv.name):
-            file2conv = file2conv.read()
-        else:
-            print(f"Did not find \'{file2conv}\'.")
-            sys.exit(1)
-    else:
-        print("No file 2 convert given.")
-        sys.exit(1)
-
     beautiful_file = BeautifulSoup(file2conv, features="html.parser")
     tables = beautiful_file.findChildren('table', attrs={'class': ['MsoNormalTable', 'tr']})
 
@@ -37,14 +23,14 @@ def get_rows(file2conv=None, no_dict=False):
         sys.exit(1)
 
     table = tables[0]
-    if no_dict is False:
-        rows = table.findChildren(['tr'])
-        if not rows:
-            print("Could not find any rows in the MsoNormalTable.")
-            sys.exit(1)
-        return rows
-    else:
-        return table
+        
+    rows = table.findChildren(['tr'])
+    
+    if not rows:
+        print("Could not find any rows in the MsoNormalTable.")
+        sys.exit(1)
+    
+    return rows
 
 def get_cache_file_path():
     cache_file_path = utils.get_cache_file_path()

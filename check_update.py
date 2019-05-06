@@ -32,18 +32,13 @@ def get_date_from_page(page: bytes) -> Optional[datetime.date]:
     """Return a datetime object of the date string found in page.
     If no date is found return None.
     """
-    page_read = open(page, 'r');page_read = page_read.read()
-    soup = BeautifulSoup(page_read, features="html.parser")
+
+    soup = BeautifulSoup(page, features="html.parser")
     
-    vp_table = get_rows(file2conv=page, no_dict=True)
-    
-    if not vp_table:
-        return None
-    
-    rows = vp_table.findChildren(['tr'])
+    rows = get_rows(file2conv=page)
     
     if not rows:
-        print("Could not find any row in the table {my_table} while checking the date",
+        print("Could not find any row in the table while checking the date",
               file=sys.stderr)
         return None
 
@@ -75,7 +70,6 @@ def compare(latest_file=None):
     """ Creates a hash of the latest Vertretungsplan and a hash
     of the newest Vertretungsplan (from the web)
     """
-
     # Pulls newest created file
     if latest_file:
         old_page = open(latest_file).read().encode("utf-8")
@@ -86,13 +80,14 @@ def compare(latest_file=None):
 
     # Parse the header to find the date of the page. It might be that the date
     # is older than the file name makes us think.
-    page_date = get_date_from_page(latest_file)
+    page_date = get_date_from_page(current_page)
+
     if not page_date:
         print(f"Did not find a date in the header of the HTML Vertretungsplan page.")
-        return False
 
     today = datetime.date.today()
-    # example: page_date = 20 today = 21, checks if 20 < 21
+
+    # example: page_date = 20 today = 21, checks if 20 < 21, also works with 30.04 < 01.05 beacuse it is a datetime attribut
     if page_date < today:
         print(f"The date found in the header of the VP HTML page is: {page_date}. "
             f"But today is: {today}")
@@ -120,7 +115,7 @@ def compare(latest_file=None):
         print("-> pulling newest vertretungsplan version.")
         pull_plan.main()
         convert.main()
-#        vp_bot.main()
+        vp_bot.main()
         return True
 
 def check_requirements():
