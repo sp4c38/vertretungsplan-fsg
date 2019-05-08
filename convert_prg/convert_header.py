@@ -152,9 +152,11 @@ class header():
                         represen_classes += [klasse]
         
         if represen_classes:
+            represen_classes = set(represen_classes);represen_classes = list(represen_classes)
             represen_classes = sort_class_names(represen_classes)
-            if represen_classes:
-                represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+            represen_classes = set(represen_classes);represen_classes = list(represen_classes)
+            represen_classes = sort_class_names(represen_classes)
+            represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
 
         if header_date:
             fout.write(header_date + '\n')
