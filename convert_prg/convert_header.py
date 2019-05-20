@@ -43,8 +43,12 @@ class header():
                 else:
                     letter = ""
 
-                classes.append((level, letter))
                 
+                # append only takes one argument, level and letter have to be linked together
+                # that is why there are two brackets: output: e.g. [(10, 'a'), ('6', 'a'), ('9', 'd')]
+
+                classes.append((level, letter))
+  
             return ["{}{}".format(e[0], e[1]) for e in sorted(classes)]
 
         def check_if_empty(check_strg=None):
@@ -155,7 +159,7 @@ class header():
             represen_classes = set(represen_classes);represen_classes = list(represen_classes)
             represen_classes = sort_class_names(represen_classes)
             represen_classes = set(represen_classes);represen_classes = list(represen_classes)
-            represen_classes = sort_class_names(represen_classes)
+            represen_classes = sort_class_names(represen_classes) 
             represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
 
         if header_date:
