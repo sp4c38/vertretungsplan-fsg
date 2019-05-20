@@ -19,7 +19,7 @@ class header():
 
     def convert_header(rows=None, fout=None):
         
-
+        awkward_symbols = (' ', '[', ']', '{', '}', '^', '´', '`', '°')
         def sort_class_names(represen_classes=None):
             """Return a list of the unsorted class names."""
             
@@ -29,6 +29,7 @@ class header():
                 return None
 
             classes = []
+            
             for class_name in represen_classes:
 
                 level = re.search('\d+', class_name)
@@ -37,18 +38,24 @@ class header():
 
                 level = int(level.group())
 
-                letter = re.search(r'[a-d]+', class_name)
-                if letter:
-                    letter = letter.group()
-                else:
-                    letter = ""
+                letter = re.findall(r'[a-d]', class_name)
+                # import IPython;IPython.embed()
 
+                # len() gets the number of items in an list e.g. l=['hi', 'bye', 'ok']
+                # than len(l) is 3
+
+                if len(letter) > 1:
+                    for i in letter:
+                        classes.append((level, i))
+                else:
+                    classes.append((level, "".join(letter)))
                 
+                if not letter:
+                    letter = ''
+
                 # append only takes one argument, level and letter have to be linked together
                 # that is why there are two brackets: output: e.g. [(10, 'a'), ('6', 'a'), ('9', 'd')]
 
-                classes.append((level, letter))
-  
             return ["{}{}".format(e[0], e[1]) for e in sorted(classes)]
 
         def check_if_empty(check_strg=None):
@@ -153,13 +160,19 @@ class header():
                     if klasse.lower() == 'klasse':
                         pass
                     else:
-                        represen_classes += [klasse]
+                        represen_classes.append(klasse)
+       
         
         if represen_classes:
-            represen_classes = set(represen_classes);represen_classes = list(represen_classes)
+            l = -1
+            for c in represen_classes:
+                l += 1
+                for s in awkward_symbols:
+                    represen_classes[l] = represen_classes[l].replace(s, '')
+
             represen_classes = sort_class_names(represen_classes)
-            represen_classes = set(represen_classes);represen_classes = list(represen_classes)
-            represen_classes = sort_class_names(represen_classes) 
+            represen_classes = set(represen_classes);represen_classes = list(sorted(represen_classes))
+            represen_classes = sort_class_names(represen_classes)
             represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
 
         if header_date:
