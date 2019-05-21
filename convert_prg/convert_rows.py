@@ -1,5 +1,6 @@
 import sys
 import re
+import emoji
 
 class body():
     def convert_rows(rows=None, fout=None, get_substitute_classes=False):
@@ -37,16 +38,14 @@ class body():
                 if klasse == '\xa0':
                     return    
                 else:
-                    if '\n' in klasse:
-                        klasse = klasse.replace('\n', '')
+                    klasse = klasse.replace('\n', '')
                     return klasse
 
             
             if lesson_number == '\xa0':
                 pass
             else:
-                if '\n' in lesson_number: 
-                    lesson_number.replace('\n', '')
+                lesson_number.replace('\n', '')
                 fout.write("\n")
                 data = (lesson_number + ':')
                 is_replacement = any(
@@ -58,12 +57,13 @@ class body():
                     fout.write('\n')
                     pass
                 else:
-                    fout.write("Keine Vertretung für die " + lesson_number + '.' + '\n')
+                    no_substitution = (emoji.emojize(":cross_mark: Keine Vertretung für die ", use_aliases=True)
+                                       + lesson_number + '.\n')
+                    fout.write(no_substitution)
             if klasse == '\xa0':
                 pass
             else:
-                if '\n' in klasse:
-                    klasse.replace('\n', '')
+                klasse.replace('\n', '')
                 level = re.search('\d+', klasse)
                 letter = re.findall(r'[a-d]', klasse)
                 klasse = str(level.group() + (''.join(letter)))
@@ -71,15 +71,13 @@ class body():
             if would_have_hour == '\xa0':
                 pass
             else:
-                if '\n' in would_have_hour:
-                    would_have_hour.replace('\n', '')
+                would_have_hour.replace('\n', '')
                 fout.write(would_have_hour + ' | ')
             
             if replacement == '\xa0':
                 pass
             else:
-                if '\n' in replacement:
-                    replacement.replace('\n', '')
+                replacement.replace('\n', '')
                 fout.write(replacement)
                 if instead_of_lesson == '\xa0':
                     fout.write('\n')
@@ -87,8 +85,7 @@ class body():
             if instead_of_lesson == '\xa0':
                 pass
             else:
-                if '\n' in instead_of_lesson:
-                    instead_of_lesson.replace('\n', '')
+                instead_of_lesson.replace('\n', '')
                 fout.write(' | statt ->' + instead_of_lesson + '\n')
 
             return
