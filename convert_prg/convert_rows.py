@@ -1,4 +1,5 @@
 import sys
+import re
 
 class body():
     def convert_rows(rows=None, fout=None, get_substitute_classes=False):
@@ -63,8 +64,10 @@ class body():
             else:
                 if '\n' in klasse:
                     klasse.replace('\n', '')
+                level = re.search('\d+', klasse)
+                letter = re.findall(r'[a-d]', klasse)
+                klasse = str(level.group() + (''.join(letter)))
                 fout.write(klasse + ' | ')
-            
             if would_have_hour == '\xa0':
                 pass
             else:
