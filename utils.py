@@ -1,80 +1,48 @@
 """Generic code for Vertretungsplan
 """
 
+import arrow
 import configparser
+import datetime
 import os
-import pathlib
-import glob
+import re
 import sys
 
-from datetime import datetime
+from convert_prg import convert_rows
 
-import pull_plan
-
-def get_telegram_config_data():
-    telegram_config = configparser.ConfigParser()
-    telegram_config_path = os.path.expanduser('~/.config/vertretungsplan/telegram.ini')
-    telegram_config.read(telegram_config_path)
-    return telegram_config
-
-
-def get_config():
+def get_stored(settings):
+    # Gets the most recent stored vertretungsplan file and return the path to it, if none is found None is returned
+    
     config = configparser.ConfigParser()
-    config_path = os.path.expanduser('~/.config/vertretungsplan/config.ini')
-    config.read(config_path)
-    return config
+    config.read(settings["recent_info"])
 
-def get_cache_file_path():
-    config = get_config()
-
-    cache_path = os.path.join(config.get('storage', 'base_dir'),
-                              config.get('storage', 'cache_dir'),
-                              'converted.txt')
-    cache_path = os.path.expanduser(cache_path)
-    
-    return cache_path
-
-def get_raw_html_file_path(date=None):
-    """Return the path of the raw html file name for a
-    given day
-
-    :param date: The date as a datetime object
-    """
-    config = get_config()
-
-    if date is None:
-        date = datetime.now()
-
-    backup_path = os.path.join(config.get('storage', 'base_dir'),
-                               config.get('storage', 'backup_dir'))
-
-    backup_path = os.path.expanduser(backup_path)
-    
-    raw_html_path = os.path.join(backup_path, str(date.year), str(date.month),
-                                 (f"{date.year}-{date.month}-{date.day}"
-                                  f"_{date.hour}:{date.minute}.html"))
-    
-    return raw_html_path
-
-def get_latest_file(print_result=True):
-
-    todays_path = os.path.dirname(get_raw_html_file_path())
-    
-    if os.path.exists(todays_path):
-        pass
+    if config["recent_stored"]["recent_stored_vertretungsplan"]:
+        return open(config["recent_stored"]["recent_stored_vertretungsplan"]).read()
     else:
-        pathlib.Path(todays_path).mkdir(exist_ok=True, parents=True)
-        print(f"Created \'{todays_path}\'\nbecause it didn't exist.")
-    
-    list_of_files = glob.glob(os.path.join(todays_path, '*'))
-    
-    # Handels error if there are no files in list_of_files
-    if not list_of_files:
         return None
 
-    latest_file = sorted(list_of_files, key=os.path.getctime, reverse=True)[0]
+def get_date_from_page(text=None):
+    """Return a datetime object of the date string found in page.
+    If no date is found return None.
+    """
 
-    if print_result == True:
-        print("Latest created file: ", latest_file)
-    
-    return latest_file
+    date_match = re.search(r'.*\b(?P<day>\d{1,2})[. ]+(?P<month>\d{1,2})[. ]+(?P<year>\d{2,4})',
+                           text[-12:])
+
+    if not date_match:
+        return None
+
+    date_match = {k: int(v) for k, v in date_match.groupdict().items()}
+
+    # The above dict comprehension means the following:
+    # new_date_match = {}
+    # for k, v in date_match.groupdict().items():
+    #     new_date_match[k] = int(v)
+    # date_match = new_date_match
+
+    if date_match['year'] < 2000:
+        # Add the current century
+        date_match['year'] += 2000
+
+    return  arrow.get(datetime.date(**date_match))
+

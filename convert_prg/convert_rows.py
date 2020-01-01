@@ -1,124 +1,157 @@
-import sys
-import re
 import emoji
+import re
+import sys
 
-class body():
-    def convert_rows(rows=None, fout=None, get_substitute_classes=False):
+from bs4 import BeautifulSoup
+
+from convert_prg import convert_header
+
+
+def get_rows(file=None):
+    beautiful_file = BeautifulSoup(file, features="html.parser")
+    tables = beautiful_file.findChildren('table', attrs={'class': ['MsoNormalTable']})
+
+    if not tables:
+        print("Could not find the MsoNormalTable table in the document.")
+        sys.exit(1)
+
+    table = tables[0]
         
-        if not rows:
-            print("No rows to convert.")
-            sys.exit(1)
+    rows = table.findChildren(['tr'])
+    
+    if not rows:
+        print("Could not find any rows in the MsoNormalTable.")
+        sys.exit(1)
+    
+    return rows
 
-        if not fout:
-            print("No file for output set.")
-            sys.exit(1)
+def parse_body_row(row=None, replacement_lessons=None, current_lesson=None, get_vp_classes=False):
+    row_strg = ""
 
-
-        def parse_row(row=None, get_vp_classes=False, fout=None):
-
-            if not fout:
-                print("No file for output set.")
-                sys.exit(1)
-
-            if not row:
-                print("No row to convert provided.")
-                sys.exit(0)
-
-            data = row.findAll('p')
-
-            lesson_number = " ".join(data[0].strings)
-            klasse = " ".join(data[1].strings)
-            would_have_hour = " ".join(data[2].strings)
-            replacement = " ".join(data[3].strings)
-            instead_of_lesson = " ".join(data[4].strings)
+    data = row.findAll('p')
+    lesson_number = data[0].text.replace("\xa0", "").replace("\n", "")
+    school_class = data[1].text.replace("\xa0", "").replace("\n", "")
+    would_have_hour = data[2].text.replace("\xa0", "").replace("\n", "")
+    replacement = data[3].text.replace("\xa0", "").replace("\n", "")
+    instead_of_lesson = data[4].text.replace("\xa0", "").replace("\n", "")
             
+    if lesson_number:
+        current_lesson = lesson_number
+
+    if current_lesson in replacement_lessons and replacement_lessons[current_lesson] == False:
+        return f"\n{emoji.emojize(':cross_mark: Keine Vertretung für die ', use_aliases=True)} {lesson_number}.\n"
+
+    if instead_of_lesson:
+        instead_of_lesson = f"statt -> {instead_of_lesson}"
+
+    data_list = [
+        school_class,
+        would_have_hour,
+        replacement,
+        instead_of_lesson,
+    ]
+
+    data_sorted = [y for y in data_list if y] # Sort out items which are empty ("", None,...)
+
+    if lesson_number and any(data_list):
+        data_together = f"\n{lesson_number}:\n {' | '.join(data_sorted)}\n"
+
+    elif not lesson_number and any(data_list):
+        data_together = f" {' | '.join(data_sorted)}\n"
+
+    elif lesson_number and not any(data_list):
+        data_together = f"\n{lesson_number}:\n"
+
+    else:
+        data_together = ""
+
+    return data_together
+    
+    
+def parse_footer_row(row=None):
+
+    footer_paragraphs = row.findAll('p')
+    footer_text = footer_paragraphs[0].text
+
+    start_char = footer_text.lower().find(':')
+    while footer_text[start_char-1] == ' ':
+        footer_text = "".join([
+                footer_text[:start_char-1],
+                footer_text[start_char:]
+            ])
+        start_char = footer_text.lower().find(':')
+
+
+    start_char = footer_text.lower().find(':')
+    try:
+        footer_text[start_char+2] == ' '
+
+        while footer_text[start_char+2] == ' ':
+            footer_text = "".join([
+                    footer_text[:start_char+2],
+                    footer_text[start_char+3:]
+                ])
+            try:
+                footer_text[start_char+2] == ' '
+            except:
+                break
+    except:
+        pass
+
+    footer_empty = convert_header.check_if_empty(check_strg=footer_text)
+
+    if footer_empty:
+        return None
+    elif not footer_empty:
+        return footer_text
+
+
+def check_replacement_lessons(rows=None):
+    # Return a dictionary, with all lesson (1.Std.,...).
+    # Each lesson has a value: True if there is any data in the colums between (a.e. 1.Std. until 2.Std.)
+    #                          False if there isn't any data in the colums between (a.e. 2.Std. until 3.Std.)
+
+    repl_lessons = {}
+
+    current_lesson = None
+    for row in rows:
+        if len(row) == 11:
+            data = row.findAll("p")
+            lesson_number = data[0].text.replace("\xa0", "").replace("\n", "")
+            school_class = data[1].text.replace("\xa0", "").replace("\n", "")
+            would_have_hour = data[2].text.replace("\xa0", "").replace("\n", "")
+            replacement = data[3].text.replace("\xa0", "").replace("\n", "")
+            instead_of_lesson = data[4].text.replace("\xa0", "").replace("\n", "")
             
+            # print(lesson_number, school_class, would_have_hour, replacement, instead_of_lesson)
 
-            if get_vp_classes == True:
-                if klasse == '\xa0':
-                    return    
-                else:
-                    klasse = klasse.replace('\n', '')
-                    return klasse
+            if lesson_number:
+                current_lesson = lesson_number
+                repl_lessons[current_lesson] = False
 
-            
-            if lesson_number == '\xa0':
-                pass
-            else:
-                lesson_number.replace('\n', '')
-                fout.write("\n")
-                data = (lesson_number + ':')
-                is_replacement = any(
-                    [e and e != '\xa0' for e in [klasse, would_have_hour,
-                                                replacement,instead_of_lesson]])
+            if any([school_class, would_have_hour, replacement, instead_of_lesson]):
+                repl_lessons[current_lesson] = True
 
-                if is_replacement:
-                    fout.write(data)
-                    fout.write('\n')
-                    pass
-                else:
-                    no_substitution = (emoji.emojize(":cross_mark: Keine Vertretung für die ", use_aliases=True)
-                                       + lesson_number + '.\n')
-                    fout.write(no_substitution)
-            if klasse == '\xa0':
-                pass
-            else:
-                klasse.replace('\n', '')
-                level = re.search('\d+', klasse)
-                letter = re.findall(r'[a-d]', klasse)
-                klasse = str(level.group() + (''.join(letter)))
-                fout.write(klasse + ' | ')
-            if would_have_hour == '\xa0':
-                pass
-            else:
-                would_have_hour.replace('\n', '')
-                fout.write(would_have_hour + ' | ')
-            
-            if replacement == '\xa0':
-                pass
-            else:
-                replacement.replace('\n', '')
-                fout.write(replacement)
-                if instead_of_lesson == '\xa0':
-                    fout.write('\n')
-            
-            if instead_of_lesson == '\xa0':
-                pass
-            else:
-                instead_of_lesson.replace('\n', '')
-                fout.write(' | statt ->' + instead_of_lesson + '\n')
+            reset = False
 
-            return
+    return repl_lessons
 
 
+def convert_rows(rows=None, get_vertretungs_classes=False):
+    body_strg = ""
 
-        def parse_footer_row(row=None, fout=None):
-            if not row:
-                print("No footer row to convert.")
-                sys.exit(1)
-            if not fout:
-                print("No output file provided.")
-                sys.exit(1)
+    replacement_for_lessons = check_replacement_lessons(rows=rows)
 
-            data = row.findAll('p')
-            data = data[0]
-            data = data.string.replace('\xa0', '').replace('\n', '')
-            fout.write('\n' + data)
+    for row in rows:
+        if len(row) == 11:
+            current_lesson_body = None
+            body_strg += parse_body_row(row=row, replacement_lessons=replacement_for_lessons, current_lesson=current_lesson_body)
+        elif len(row) == 3:
+            footer = parse_footer_row(row=row)
 
+    return body_strg + "\n" + footer
 
-
-        if get_substitute_classes == True:
-            klasse = parse_row(row=rows, fout=fout, get_vp_classes=True)
-            return klasse
-        else:   
-            rows.pop(0)
-        
-            for row in rows:
-               # cells = row.findChildren(['td', 'p'])
-
-                if len(row) == 11:
-                    parse_row(row=row, fout=fout)
-                elif len(row) == 3:
-                    parse_footer_row(row=row, fout=fout)
-
-
+    # if get_substitute_classes == True:
+    #     klasse = parse_row(row=rows, fout=fout, get_vp_classes=True)
+    #     return klasse
+    # else:   

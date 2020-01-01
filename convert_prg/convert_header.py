@@ -4,185 +4,188 @@ import emoji
 import sys
 import re
 
-from convert_prg.teacher_list import teacher_list
-from convert_prg.convert_rows import body
+import utils
 
-class header():
-    """ 
-    IMPORT FROM A PACKAGE
-    1. create directory with package name
-    2. in this directory create a __init__.py (leave it empty)
-    3. create a new file and then a class with the def to import
-    4. in file outside the created directory write: 
-    from PACKAGENAME.FILEWITHCLASS import NAMEOFDEF 
+def check_if_empty(check_strg=None):
     """
+    We need a special method for checking, if specific things are empty. For example if 
+    there are no classes, which are missing or if there are no teachers, which are missing.
+    """
+    seperator = check_strg.lower().find(':')
+    second_part = check_strg[seperator+1:].replace('\xa0', '').replace('\n', '').replace(' ', '')
 
-    def convert_header(rows=None, fout=None):
+    if second_part:
+        return False
+    elif not second_part:
+        return True
+
+def header(rows=None):  
+    header_strg = ""
+
+    header_row = rows.pop(0).findAll("p")
+    date_row = header_row[0]
+    date_text = date_row.text.replace('\n', '')
         
-        awkward_symbols = (' ', '[', ']', '{', '}', '^', '´', '`', '°')
-        def sort_class_names(represen_classes=None):
-            """Return a list of the unsorted class names."""
-            
+    date = utils.get_date_from_page(date_text)
 
-            if represen_classes is None:
-                print("No classes to sort given.")
-                return None
+    day_relation = {
+        1: "Montag",
+        2: "Dienstag",
+        3: "Mittwoch",
+        4: "Donnerstag",
+        5: "Freitag",
+        6: "Samstag",
+        7: "Sonntag",
+    }
 
-            classes = []
-            
-            for class_name in represen_classes:
+    header_date = f"Vertretungsplan für: {day_relation[int(date.format('d'))]}, "\
+                  f"{date.day}.{date.month}.{date.year} {emoji.emojize(':exploding_head:', use_aliases=True)}"
 
-                level = re.search('\d+', class_name)
-                if not level:
-                    continue
-
-                level = int(level.group())
-
-                letter = re.findall(r'[a-d]', class_name)
-                # import IPython;IPython.embed()
-
-                # len() gets the number of items in an list e.g. l=['hi', 'bye', 'ok']
-                # than len(l) is 3
-
-                if len(letter) > 1:
-                    for i in letter:
-                        classes.append((level, i))
-                else:
-                    classes.append((level, "".join(letter)))
-                
-                if not letter:
-                    letter = ''
-
-                # append only takes one argument, level and letter have to be linked together
-                # that is why there are two brackets: output: e.g. [(10, 'a'), ('6', 'a'), ('9', 'd')]
-
-            return ["{}{}".format(e[0], e[1]) for e in sorted(classes)]
-
-        def check_if_empty(check_strg=None):
-            """Checks if there is anything after a : . In this case checks if a.e. 
-            there are any classes missing"""
-            if check_strg == None:
-                print("No string to check given.")
-            
-            seperator = (check_strg.lower().find(':') +1 )
-            second_part = check_strg.replace(check_strg[:seperator], '').replace('\xa0', '').replace('\n', '')
-            second_part1 = second_part.replace(check_strg[:seperator], '').replace('\xa0', '').replace(' ', '').replace('\n', '')
-
-            if re.match('[A-Za-z0-9]' , second_part1):
-                check_strg = "".join([
-                        check_strg[:seperator],
-                        second_part
-                    ])
-            else:
-                check_strg = None
     
-            return check_strg
+    classes_text = header_row[1].find('span').text.replace("\n", "").replace("\xa0", "")
+ 
+    classes_text_empty = check_if_empty(classes_text)
 
-        if not rows:
-            print("No rows to convert provided.")
-            sys.exit(1)
+    # The classes_text could look like this: Fehlende Klassen  :  5b // too many 
+    # of those spaces. This trys to eliminate them:
 
-        if not fout:
-            print("No output file provided.")
-            sys.exit(1)
+    start_char = classes_text.lower().find(':')
 
-        row = rows.pop(0)
-        paragraphs = row.findAll('p')
+    while classes_text[start_char-1] == ' ':
+        classes_text = "".join([
+                classes_text[:start_char-1],
+                classes_text[start_char:]
+            ])
+        start_char = classes_text.lower().find(':')
 
-        header_date = paragraphs[0]
-        header_date = header_date.string.replace('\n', '')
+    start_char = classes_text.lower().find(':')
+    
+    try:
+        classes_text[start_char+2] == ' '
 
-        days = {
-            'montag': 'Mo',
-            'dienstag': 'Di',
-            'mittwoch': 'Mi',
-            'donnerstag': 'Do',
-            'freitag': 'Fr',
-        }
-            
-        for day in days:
-            if day in header_date.lower():
-                start_char = header_date.lower().find(day)
-                header_date = "".join(
-                    [
-                        header_date[:start_char],
-                        days.get(day),
-                        header_date[start_char + len(day):],
-                    ]
-                )
-            else:
-                pass
-
-        header_date = (header_date + emoji.emojize(' :grinning_face:',
-                       use_aliases=True))
-
-        header_classes = paragraphs[1].find('span')
-        header_classes = header_classes.string
-        header_classes = check_if_empty(header_classes)
-
-        header_teacher = paragraphs[2].find('span')
-        header_teacher = " ".join(
-            str(i).replace('\n', '').replace('<i> </i>', '').replace('\xa0', '')
-            for i in header_teacher.contents)
-
-        start_char = header_teacher.lower().find(':')
-        if header_teacher[start_char-1] == ' ':
-            header_teacher = "".join([
-                    header_teacher[:start_char-1],
-                    header_teacher[start_char:]
+        while classes_text[start_char+2] == ' ':
+            classes_text = "".join([
+                    classes_text[:start_char+2],
+                    classes_text[start_char+3:]
                 ])
+            try:
+                classes_text[start_char+2] == ' '
+            except:
+                break
+    except:
+        pass
 
-        for teacher in teacher_list:
-            if teacher.lower() in header_teacher.lower():
-                start_char = header_teacher.lower().find(teacher.lower())
-                header_teacher = "".join(
-                    [
-                        header_teacher[:start_char],
-                        teacher_list.get(teacher),
-                        header_teacher[start_char + len(teacher):],
-                    ]
-                )
-                
-        else:
-            pass
-        header_teacher = check_if_empty(header_teacher)
-
-        represen_classes = []
+    if classes_text_empty:
+        header_classes = None
+    elif not classes_text_empty:
+        header_classes = classes_text.replace("\n", "")
 
 
-        for row in rows:
-            if len(row) == 11:
-                klasse = body.convert_rows(rows=row, fout=fout, get_substitute_classes=True)
-                
-                if klasse == None:
-                    pass
-                else:
-                    if klasse.lower() == 'klasse':
-                        pass
-                    else:
-                        represen_classes.append(klasse)
-       
+    teachers_text = header_row[2].find('span')
+    teachers_replace = " ".join(str(i).replace('\n', '').replace('<i> </i>', '').replace('\xa0', '').replace('<i></i>', '')
+                        for i in teachers_text.contents)
+
+    # The teacher_text looks mostly like this: Fehlende Lehrer  :  ST;LE; STF // too many 
+    # of those spaces. This trys to eliminate them:
+    start_char = teachers_replace.lower().find(':')
+    while teachers_replace[start_char-1] == ' ':
+        teachers_replace = "".join([
+                teachers_replace[:start_char-1],
+                teachers_replace[start_char:]
+            ])
+        start_char = teachers_replace.lower().find(':')
+
+    start_char = teachers_replace.lower().find(':')
+    
+    try:
+        classes_text[start_char+2] == ' '
+
+        while teachers_replace[start_char+2] == ' ':
+            teachers_replace = "".join([
+                    teachers_replace[:start_char+2],
+                    teachers_replace[start_char+3:]
+                ])
+            try:
+                teachers_replace[start_char+2] == ' '
+            except:
+                break
+    except:
+        pass
+
+    teachers_replace_empty = check_if_empty(teachers_replace)
+    if teachers_replace_empty:
+        header_teachers = None
+    elif not teachers_replace_empty:
+        header_teachers = teachers_replace
+
+
+    # represen_classes = []
+    # for row in rows:
+    #     if len(row) == 11:
+    #         klasse = body.convert_rows(rows=row, fout=fout, get_vertretungs_classes=True)
+            
+    #         if klasse == None:
+    #             pass
+    #         else:
+    #             if klasse.lower() == 'klasse':
+    #                 pass
+    #             else:
+    #                 represen_classes.append(klasse)
+   
+    
+    # if represen_classes:
+    #     l = -1
+    #     for c in represen_classes:
+    #         l += 1
+    #         for s in awkward_symbols:
+    #             represen_classes[l] = represen_classes[l].replace(s, '')
+    #     represen_classes = sort_class_names(represen_classes)
+    #     represen_classes = set(represen_classes);represen_classes = list(sorted(represen_classes))
+    #     represen_classes = sort_class_names(represen_classes)
+    #     represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+    if header_date:
+        header_strg += header_date + '\n'
+    if header_classes:
+        header_strg += header_classes + '\n'
+    if header_teachers:
+        header_strg += header_teachers + '\n'
+    # if represen_classes:
+        # fout.write(represen_classes + '\n')
+    
+    # Pop to remove Klasse | Fach ... row from rows. We are not taking the content from this row,
+    # just add a custom string (next +=)
+    rows.pop(0)
+    header_strg += "\nKlasse | Fach | Vertretung durch: (Fach) | statt\n"
+
+    return header_strg
+
+    def sort_class_names(represen_classes=None):
+        """Return a list of the unsorted class names."""
         
-        if represen_classes:
-            l = -1
-            for c in represen_classes:
-                l += 1
-                for s in awkward_symbols:
-                    represen_classes[l] = represen_classes[l].replace(s, '')
-
-            represen_classes = sort_class_names(represen_classes)
-            represen_classes = set(represen_classes);represen_classes = list(sorted(represen_classes))
-            represen_classes = sort_class_names(represen_classes)
-            represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
-
-        if header_date:
-            fout.write(header_date + '\n')
-        if header_classes:
-            fout.write(header_classes + '\n')
-        if header_teacher:
-            fout.write(header_teacher + '\n\n')
-        if represen_classes:
-            fout.write(represen_classes + '\n')
+        if represen_classes is None:
+            print("No classes to sort given.")
+            return None
+        classes = []
         
-        fout.write("\n-> Klasse | Fach | Vertretung durch: (Fach) | statt\n")
-       
+        for class_name in represen_classes:
+            level = re.search('\d+', class_name)
+            if not level:
+                continue
+            level = int(level.group())
+            letter = re.findall(r'[a-d]', class_name)
+
+            # len() gets the number of items in an list e.g. l=['hi', 'bye', 'ok']
+            # than len(l) is 3
+            if len(letter) > 1:
+                for i in letter:
+                    classes.append((level, i))
+            else:
+                classes.append((level, "".join(letter)))
+            
+            if not letter:
+                letter = ''
+            # append only takes one argument, level and letter have to be linked together
+            # that is why there are two brackets: output: e.g. [(10, 'a'), ('6', 'a'), ('9', 'd')]
+        return ["{}{}".format(e[0], e[1]) for e in sorted(classes)]
+
+
