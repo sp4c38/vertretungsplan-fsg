@@ -25,7 +25,7 @@ def get_rows(file=None):
     
     return rows
 
-def parse_body_row(row=None, replacement_lessons=None, current_lesson=None, get_vp_classes=False):
+def parse_body_row(row=None, replacement_lessons=None, current_lesson=None, get_vertretungs_classes=False):
     row_strg = ""
 
     data = row.findAll('p')
@@ -34,7 +34,13 @@ def parse_body_row(row=None, replacement_lessons=None, current_lesson=None, get_
     would_have_hour = data[2].text.replace("\xa0", "").replace("\n", "")
     replacement = data[3].text.replace("\xa0", "").replace("\n", "")
     instead_of_lesson = data[4].text.replace("\xa0", "").replace("\n", "")
-            
+    
+
+    if get_vertretungs_classes == True:
+        # If get_vertretungs_classes is True the programm will only return the school classes which have vertreung
+        # it could be that duplicates occur. This is used by convert_header
+        return school_class
+
     if lesson_number:
         current_lesson = lesson_number
 
@@ -149,9 +155,7 @@ def convert_rows(rows=None, get_vertretungs_classes=False):
         elif len(row) == 3:
             footer = parse_footer_row(row=row)
 
-    return body_strg + "\n" + footer
-
-    # if get_substitute_classes == True:
-    #     klasse = parse_row(row=rows, fout=fout, get_vp_classes=True)
-    #     return klasse
-    # else:   
+    if body_strg and footer:
+        return body_strg + "\n" + footer
+    elif body_strg:
+        return body_strg

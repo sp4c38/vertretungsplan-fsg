@@ -6,6 +6,8 @@ import re
 
 import utils
 
+from convert_prg import convert_rows
+
 def check_if_empty(check_strg=None):
     """
     We need a special method for checking, if specific things are empty. For example if 
@@ -19,7 +21,41 @@ def check_if_empty(check_strg=None):
     elif not second_part:
         return True
 
-def header(rows=None):  
+def sort_class_names(represen_classes=None):
+    # Return a list of sorted class names
+    duplicated_classes = [] # This list includes classes, but they could occur multiple times.
+    
+    for class_name in represen_classes:
+        level = re.search('\d+', class_name) # The level of the school class a.e.: 2,4,7,10,12, re.search returns None if nothing is found and _sre.SRE_Match when a level is found
+
+        if not level:
+            continue
+
+        level = int(level.group())
+        letter_list = re.findall(r'[a-d]', class_name)
+
+        if not letter_list:
+            letter_list = ''
+
+        if len(letter_list) > 1:
+            for character in letter_list:
+                duplicated_classes.append((level, character))
+        else:
+            duplicated_classes.append((level, "".join(letter_list)))
+
+    duplicated_classes_together = ["{}{}".format(e[0], e[1]) for e in sorted(duplicated_classes)] # Sorts classes and stiches the level and letter together, some classes could still occure multiple times
+    classes = [] # This list only includes classes, which don't occur more than one time
+
+    for i in duplicated_classes_together:
+        if not i in classes:
+            classes.append(i)
+
+    return classes
+
+def parse_header(rows=None):
+    # Pop to remove Klasse | Fach ... row from rows, because we aren't needing this.
+    rows.pop(1)
+
     header_strg = ""
 
     header_row = rows.pop(0).findAll("p")
@@ -119,73 +155,28 @@ def header(rows=None):
         header_teachers = teachers_replace
 
 
-    # represen_classes = []
-    # for row in rows:
-    #     if len(row) == 11:
-    #         klasse = body.convert_rows(rows=row, fout=fout, get_vertretungs_classes=True)
-            
-    #         if klasse == None:
-    #             pass
-    #         else:
-    #             if klasse.lower() == 'klasse':
-    #                 pass
-    #             else:
-    #                 represen_classes.append(klasse)
-   
-    
-    # if represen_classes:
-    #     l = -1
-    #     for c in represen_classes:
-    #         l += 1
-    #         for s in awkward_symbols:
-    #             represen_classes[l] = represen_classes[l].replace(s, '')
-    #     represen_classes = sort_class_names(represen_classes)
-    #     represen_classes = set(represen_classes);represen_classes = list(sorted(represen_classes))
-    #     represen_classes = sort_class_names(represen_classes)
-    #     represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+    represen_classes = []
+    for row in rows:
+        if len(row) == 11:
+            school_class = convert_rows.parse_body_row(row=row, get_vertretungs_classes=True)
+
+            if school_class:
+                represen_classes.append(school_class)
+
+    if represen_classes:
+        represen_classes = sort_class_names(represen_classes)
+        represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+
     if header_date:
         header_strg += header_date + '\n'
     if header_classes:
         header_strg += header_classes + '\n'
     if header_teachers:
         header_strg += header_teachers + '\n'
-    # if represen_classes:
-        # fout.write(represen_classes + '\n')
+    if represen_classes:
+        header_strg += represen_classes + '\n'
     
-    # Pop to remove Klasse | Fach ... row from rows. We are not taking the content from this row,
-    # just add a custom string (next +=)
-    rows.pop(0)
+
     header_strg += "\nKlasse | Fach | Vertretung durch: (Fach) | statt\n"
 
     return header_strg
-
-    def sort_class_names(represen_classes=None):
-        """Return a list of the unsorted class names."""
-        
-        if represen_classes is None:
-            print("No classes to sort given.")
-            return None
-        classes = []
-        
-        for class_name in represen_classes:
-            level = re.search('\d+', class_name)
-            if not level:
-                continue
-            level = int(level.group())
-            letter = re.findall(r'[a-d]', class_name)
-
-            # len() gets the number of items in an list e.g. l=['hi', 'bye', 'ok']
-            # than len(l) is 3
-            if len(letter) > 1:
-                for i in letter:
-                    classes.append((level, i))
-            else:
-                classes.append((level, "".join(letter)))
-            
-            if not letter:
-                letter = ''
-            # append only takes one argument, level and letter have to be linked together
-            # that is why there are two brackets: output: e.g. [(10, 'a'), ('6', 'a'), ('9', 'd')]
-        return ["{}{}".format(e[0], e[1]) for e in sorted(classes)]
-
-

@@ -23,7 +23,8 @@ def main():
         # Find table and rows in that table
         rows = convert_rows.get_rows(file=recent_vp)
         # Convert header and create header variable
-        header = convert_header.header(rows=rows)
+        print("Converting...")
+        header = convert_header.parse_header(rows=rows)
         body = convert_rows.convert_rows(rows=rows)
         output = header + body
 
