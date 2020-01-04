@@ -20,6 +20,7 @@ def main():
 
     if updated:
         print("Updated.")
+        utils.backup_vertretungsplan(settings=settings, to_save=recent_vp) # Save the vertretungsplan to backups
         # Find table and rows in that table
         rows = convert_rows.get_rows(file=recent_vp)
         # Convert header and create header variable
@@ -39,5 +40,11 @@ def main():
     print(f"\nSession ended {arrow.utcnow().format()}.")
 
 if __name__ == '__main__':
-    main()
+    if settings["debug"]: # info: settings["debug"]: True
+        main()
+    else: # info: settings["debug"]: False
+        try:
+            main()
+        except:
+            print("The program was interrupted.")
     

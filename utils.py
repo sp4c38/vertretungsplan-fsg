@@ -17,7 +17,10 @@ def get_stored(settings):
     config.read(settings["recent_info"])
 
     if config["recent_stored"]["recent_stored_vertretungsplan"]:
-        return open(config["recent_stored"]["recent_stored_vertretungsplan"]).read()
+        try:
+            return open(config["recent_stored"]["recent_stored_vertretungsplan"]).read()
+        except:
+            return None
     else:
         return None
 
@@ -46,3 +49,27 @@ def get_date_from_page(text=None):
 
     return  arrow.get(datetime.date(**date_match))
 
+def backup_vertretungsplan(settings, to_save):
+    # This function backs up the vertretungsplan. This is used to recognise that a vertretungsplan was already
+    # send a previouse time and doesn't have to be send again, 
+    # but it is also usefull for analyzing the data later (to do some stats).
+    
+    time = arrow.utcnow().to("MET")
+    backup_dir_path = os.path.join(settings["backup_path"], str(time.year), time.format("MM")) # Only directory path
+    backup_file_path = os.path.join(backup_dir_path, time.format("DD-MM-YYYY_HH:mm.txt")) # Directory and file path
+
+    recent_info_path = settings["recent_info"]
+    config = configparser.ConfigParser()
+    config.read(recent_info_path)
+    config["recent_stored"]["recent_stored_vertretungsplan"] = backup_file_path
+
+    print("Saving backup to -> ", backup_file_path)
+
+    os.makedirs(backup_dir_path, exist_ok=True)
+    with open(backup_file_path, "w") as backup_file:
+        backup_file.write(to_save)
+
+    with open(recent_info_path, "w") as info_file:
+        config.write(info_file)
+
+    return
