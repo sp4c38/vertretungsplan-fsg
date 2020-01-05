@@ -25,7 +25,7 @@ def get_rows(file=None):
     
     return rows
 
-def parse_body_row(row=None, replacement_lessons=None, current_lesson=None, get_vertretungs_classes=False):
+def parse_body_row(row=None, replacement_lessons=None, get_vertretungs_classes=False):
     row_strg = ""
 
     data = row.findAll('p')
@@ -34,17 +34,15 @@ def parse_body_row(row=None, replacement_lessons=None, current_lesson=None, get_
     would_have_hour = data[2].text.replace("\xa0", "").replace("\n", "")
     replacement = data[3].text.replace("\xa0", "").replace("\n", "")
     instead_of_lesson = data[4].text.replace("\xa0", "").replace("\n", "")
-    
 
     if get_vertretungs_classes == True:
         # If get_vertretungs_classes is True the programm will only return the school classes which have vertreung
         # it could be that duplicates occur. This is used by convert_header
         return school_class
 
-    if lesson_number:
-        current_lesson = lesson_number
-
-    if current_lesson in replacement_lessons and replacement_lessons[current_lesson] == False:
+    if lesson_number in replacement_lessons["reversed_no_vertretung"]:
+        return ""
+    elif lesson_number in replacement_lessons and replacement_lessons[lesson_number] == False:
         return f"\n{emoji.emojize(':cross_mark: Keine Vertretung für die ', use_aliases=True)} {lesson_number}.\n"
 
     if instead_of_lesson:
@@ -113,11 +111,11 @@ def parse_footer_row(row=None):
 
 
 def check_replacement_lessons(rows=None):
-    # Return a dictionary, with all lesson (1.Std.,...).
+    # Return a dictionary, with all lesson
     # Each lesson has a value: True if there is any data in the colums between (a.e. 1.Std. until 2.Std.)
     #                          False if there isn't any data in the colums between (a.e. 2.Std. until 3.Std.)
 
-    repl_lessons = {}
+    repl_lessons = {"reversed_no_vertretung": []}
 
     current_lesson = None
     for row in rows:
@@ -142,16 +140,31 @@ def check_replacement_lessons(rows=None):
 
     return repl_lessons
 
+def remove_no_representation(vertretungs_lessons):
+    # The function looks from the reversed order on vertretungs_lessons. Now it sorts all
+    # lessons which have no vertretung into vertretungs_lessons["reversed_no_vertretung"] until
+    # it finds one which has vertretung. This is used that we don't display "Keine Vertretung fü...."
+    # for lessons which have no following lessons with vertretung. Don't display them -> to keep an overview.
+
+
+    for lesson in sorted(vertretungs_lessons, reverse=True): # Use sorted to iterate over list (dictionary) in reversed way
+        if vertretungs_lessons[lesson] == False:
+            vertretungs_lessons.pop(lesson)
+            vertretungs_lessons["reversed_no_vertretung"].append(lesson)
+        elif vertretungs_lessons[lesson] == True:
+            break
+
+    return vertretungs_lessons
 
 def convert_rows(rows=None, get_vertretungs_classes=False):
     body_strg = ""
 
     replacement_for_lessons = check_replacement_lessons(rows=rows)
+    replacement_for_lessons = remove_no_representation(vertretungs_lessons=replacement_for_lessons)
 
     for row in rows:
         if len(row) == 11:
-            current_lesson_body = None
-            body_strg += parse_body_row(row=row, replacement_lessons=replacement_for_lessons, current_lesson=current_lesson_body)
+            body_strg += parse_body_row(row=row, replacement_lessons=replacement_for_lessons)
         elif len(row) == 3:
             footer = parse_footer_row(row=row)
 

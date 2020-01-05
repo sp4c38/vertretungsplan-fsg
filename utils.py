@@ -71,5 +71,5 @@ def backup_vertretungsplan(settings, to_save):
 
     with open(recent_info_path, "w") as info_file:
         config.write(info_file)
-
+    
     return

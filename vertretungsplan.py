@@ -20,7 +20,8 @@ def main():
 
     if updated:
         print("Updated.")
-        utils.backup_vertretungsplan(settings=settings, to_save=recent_vp) # Save the vertretungsplan to backups
+        if not settings["debug"]:
+            utils.backup_vertretungsplan(settings=settings, to_save=recent_vp) # Save the vertretungsplan to backups
         # Find table and rows in that table
         rows = convert_rows.get_rows(file=recent_vp)
         # Convert header and create header variable
@@ -31,9 +32,10 @@ def main():
 
         output_file = open(settings["output_path"], "w") # This actually isn't needed by the program,
         output_file.write(output) # but is nice to have,
-        output_file.close() # this code can be commented or deleted if wished and will have no effects on the flow
+        output_file.close() # this code can be commented or deleted if wished
 
-        telegram.send_message(settings=settings, message=output)
+        if not settings["debug"]: # Only send message if debug mode is disabled
+            telegram.send_message(settings=settings, message=output)
     else:
         print("Not updated.")
 

@@ -15,6 +15,6 @@ settings = {
         "telgram_cfg": os.path.join(BASE_DIR, "config", "telegram.ini"),
     },
 
-    "debug": True, # A extra setting which helps debbuging the program
+    "debug": False, # A extra setting which helps debbuging the program
 
 }
