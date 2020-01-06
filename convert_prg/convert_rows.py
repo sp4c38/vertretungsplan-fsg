@@ -55,7 +55,7 @@ def parse_body_row(row=None, replacement_lessons=None, get_vertretungs_classes=F
         instead_of_lesson,
     ]
 
-    data_sorted = [y for y in data_list if y] # Sort out items which are empty ("", None,...)
+    data_sorted = [y for y in data_list if y] # Sort out items which are empty
 
     if lesson_number and any(data_list):
         data_together = f"\n{lesson_number}:\n {' | '.join(data_sorted)}\n"
