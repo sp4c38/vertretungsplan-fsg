@@ -4,9 +4,9 @@ import emoji
 import sys
 import re
 
-import utils
+from modules import utils
 
-from convert_prg import convert_rows
+from modules.convert_prg import convert_rows
 
 def check_if_empty(check_strg=None):
     """

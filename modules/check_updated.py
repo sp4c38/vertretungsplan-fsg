@@ -13,8 +13,8 @@ import re
 
 from bs4 import BeautifulSoup
 
-from convert_prg import convert_rows
-from utils import get_date_from_page
+from modules.convert_prg import convert_rows
+from modules.utils import get_date_from_page
 
 def compare(srd_vp, rct_vp):
     """ 

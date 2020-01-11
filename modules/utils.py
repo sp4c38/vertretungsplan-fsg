@@ -8,7 +8,7 @@ import os
 import re
 import sys
 
-from convert_prg import convert_rows
+from modules.convert_prg import convert_rows
 
 def get_stored(settings):
     # Gets the most recent stored vertretungsplan file and return the path to it, if none is found None is returned

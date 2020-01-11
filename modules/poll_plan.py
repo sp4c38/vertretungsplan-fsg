@@ -9,7 +9,7 @@ import pathlib
 import requests
 import sys
 
-import utils
+from modules import utils
 
 def download_page(url, settings):
     # Get the vertretungsplan website config as configparser.ConfigParser object

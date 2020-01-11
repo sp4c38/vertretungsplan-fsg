@@ -1,13 +1,17 @@
-import arrow
+# all_vertretungsplan just sends the whole vertretungsplan in a telegram chat. Not user-specific. Just checks if the vertretungsplan
+# updated and than dumps the vertretungsplan in a chat (via Telegram)
 
-import check_updated
-import poll_plan
-import telegram
-import utils
+import arrow
+import requests
+
+from modules import check_updated
+from modules import  poll_plan
+from modules import telegram
+from modules import utils
 
 from settings import settings
 
-from convert_prg import convert_header, convert_rows
+from modules.convert_prg import convert_header, convert_rows
 
 
 def main():
@@ -47,6 +51,8 @@ if __name__ == '__main__':
     else: # info: settings["debug"]: False
         try:
             main()
+        except requests.exceptions.ConnectionError:
+            print("We had problems connecting to the internet.")
         except:
             print("The program was interrupted.")
     

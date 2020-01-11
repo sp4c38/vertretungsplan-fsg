@@ -4,7 +4,7 @@ import sys
 
 from bs4 import BeautifulSoup
 
-from convert_prg import convert_header
+from modules.convert_prg import convert_header
 
 
 def get_rows(file=None):
