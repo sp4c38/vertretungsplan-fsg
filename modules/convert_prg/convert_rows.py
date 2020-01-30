@@ -4,6 +4,7 @@ import sys
 
 from bs4 import BeautifulSoup
 
+from modules import utils
 from modules.convert_prg import convert_header
 
 
@@ -25,8 +26,20 @@ def get_rows(file=None):
     
     return rows
 
-def parse_body_row(row=None, replacement_lessons=None, get_vertretungs_classes=False):
-    row_strg = ""
+def check_contains(class_list, wclasses):
+    if "all" in wclasses:
+        return True
+
+    for m in class_list:
+        if m in wclasses:
+            return True
+        else:
+            continue
+
+    return False
+
+def parse_body_row(row=None, replacement_lessons=None, get_vertretungs_classes=False, wclasses=None):
+    data_together = ""
 
     data = row.findAll('p')
     lesson_number = data[0].text.replace("\xa0", "").replace("\n", "")
@@ -48,59 +61,42 @@ def parse_body_row(row=None, replacement_lessons=None, get_vertretungs_classes=F
     if instead_of_lesson:
         instead_of_lesson = f"statt -> {instead_of_lesson}"
 
-    data_list = [
-        school_class,
-        would_have_hour,
-        replacement,
-        instead_of_lesson,
-    ]
 
-    data_sorted = [y for y in data_list if y] # Sort out items which are empty
+    data_sorted = [y for y in [school_class, would_have_hour, replacement, instead_of_lesson] if y] # Sort out items which are empty | with lesson_number
 
-    if lesson_number and any(data_list):
-        data_together = f"\n{lesson_number}:\n {' | '.join(data_sorted)}\n"
+    if lesson_number and any(data_sorted):
+        if school_class:
+            class_list = utils.get_validate_classes(school_class)["successful"]
+            contains = check_contains(class_list, wclasses)
+            if contains:
+                data_together = f"\n{lesson_number}:\n {' | '.join(data_sorted)}\n"
+            else:
+                data_together = f"\n{lesson_number}:\n"
+        else:
+            data_together = f"\n{lesson_number}:\n {' | '.join(data_sorted)}\n"
 
-    elif not lesson_number and any(data_list):
-        data_together = f" {' | '.join(data_sorted)}\n"
+    elif not lesson_number and any(data_sorted):
+        if school_class:
+            class_list = utils.get_validate_classes(school_class)["successful"]
+            contains = check_contains(class_list, wclasses)
+            if contains:
+                data_together = f" {' | '.join(data_sorted)}\n"
+        else:
+            data_together = f" {' | '.join(data_sorted)}\n"
 
-    elif lesson_number and not any(data_list):
+    elif lesson_number and not any(data_sorted) and replacement_lessons[lesson_number] == True:
+        print("lol", lesson_number)
         data_together = f"\n{lesson_number}:\n"
-
-    else:
-        data_together = ""
 
     return data_together
     
     
-def parse_footer_row(row=None):
+def parse_footer_row(row):
 
     footer_paragraphs = row.findAll('p')
-    footer_text = footer_paragraphs[0].text
+    footer_text = footer_paragraphs[0].text.replace("\n", "").replace("\xa0", "")
 
-    start_char = footer_text.lower().find(':')
-    while footer_text[start_char-1] == ' ':
-        footer_text = "".join([
-                footer_text[:start_char-1],
-                footer_text[start_char:]
-            ])
-        start_char = footer_text.lower().find(':')
-
-
-    start_char = footer_text.lower().find(':')
-    try:
-        footer_text[start_char+2] == ' '
-
-        while footer_text[start_char+2] == ' ':
-            footer_text = "".join([
-                    footer_text[:start_char+2],
-                    footer_text[start_char+3:]
-                ])
-            try:
-                footer_text[start_char+2] == ' '
-            except:
-                break
-    except:
-        pass
+    footer_text = utils.remove_spaces(footer_text)
 
     footer_empty = convert_header.check_if_empty(check_strg=footer_text)
 
@@ -110,13 +106,13 @@ def parse_footer_row(row=None):
         return footer_text
 
 
-def check_replacement_lessons(rows=None):
+def check_replacement_lessons(rows, wclasses):
     # Return a dictionary, with all lesson
     # Each lesson has a value: True if there is any data in the colums between (a.e. 1.Std. until 2.Std.)
     #                          False if there isn't any data in the colums between (a.e. 2.Std. until 3.Std.)
 
     repl_lessons = {"reversed_no_vertretung": []}
-
+    
     current_lesson = None
     for row in rows:
         if len(row) == 11:
@@ -127,16 +123,22 @@ def check_replacement_lessons(rows=None):
             replacement = data[3].text.replace("\xa0", "").replace("\n", "")
             instead_of_lesson = data[4].text.replace("\xa0", "").replace("\n", "")
             
-            # print(lesson_number, school_class, would_have_hour, replacement, instead_of_lesson)
-
+            class_list = utils.get_validate_classes(school_class)["successful"]
+            
             if lesson_number:
                 current_lesson = lesson_number
                 repl_lessons[current_lesson] = False
 
-            if any([school_class, would_have_hour, replacement, instead_of_lesson]):
+            if "all" in wclasses and any([class_list, would_have_hour, replacement, instead_of_lesson]):
                 repl_lessons[current_lesson] = True
-
-            reset = False
+            else:
+                if class_list and any([would_have_hour, replacement, instead_of_lesson]):
+                    for c in wclasses:
+                        if c in class_list:
+                            repl_lessons[current_lesson] = True
+                            continue
+                elif not class_list and any([would_have_hour, replacement, instead_of_lesson]):
+                    repl_lessons[current_lesson] = True
 
     return repl_lessons
 
@@ -156,15 +158,14 @@ def remove_no_representation(vertretungs_lessons):
 
     return vertretungs_lessons
 
-def convert_rows(rows=None, get_vertretungs_classes=False):
+def convert_body_footer(rows, wclasses):
     body_strg = ""
-
-    replacement_for_lessons = check_replacement_lessons(rows=rows)
+    replacement_for_lessons = check_replacement_lessons(rows=rows, wclasses=wclasses)
     replacement_for_lessons = remove_no_representation(vertretungs_lessons=replacement_for_lessons)
 
     for row in rows:
         if len(row) == 11:
-            body_strg += parse_body_row(row=row, replacement_lessons=replacement_for_lessons)
+            body_strg += parse_body_row(row=row, replacement_lessons=replacement_for_lessons, wclasses=wclasses)
         elif len(row) == 3:
             footer = parse_footer_row(row=row)
 

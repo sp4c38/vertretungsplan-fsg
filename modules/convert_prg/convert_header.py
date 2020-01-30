@@ -52,13 +52,10 @@ def sort_class_names(represen_classes=None):
 
     return classes
 
-def parse_header(rows=None):
-    # Pop to remove Klasse | Fach ... row from rows, because we aren't needing this.
-    rows.pop(1)
-
+def parse_header(rows, wclasses):
     header_strg = ""
 
-    header_row = rows.pop(0).findAll("p")
+    header_row = rows[0].findAll("p")
     date_row = header_row[0]
     date_text = date_row.text.replace('\n', '')
         
@@ -75,42 +72,15 @@ def parse_header(rows=None):
     }
 
     header_date = f"Vertretungsplan für: {day_relation[int(date.format('d'))]}, "\
-                  f"{date.day}.{date.month}.{date.year} {emoji.emojize(':exploding_head:', use_aliases=True)}"
+                  f"{date.day}.{date.month}.{date.year} {emoji.emojize(':exploding_head:', use_aliases=True )}"
 
-    
     classes_text = header_row[1].find('span').text.replace("\n", "").replace("\xa0", "")
- 
-    classes_text_empty = check_if_empty(classes_text)
-
-    # The classes_text could look like this: Fehlende Klassen  :  5b // too many 
-    # of those spaces. This trys to eliminate them:
-
-    start_char = classes_text.lower().find(':')
-
-    while classes_text[start_char-1] == ' ':
-        classes_text = "".join([
-                classes_text[:start_char-1],
-                classes_text[start_char:]
-            ])
-        start_char = classes_text.lower().find(':')
-
-    start_char = classes_text.lower().find(':')
     
-    try:
-        classes_text[start_char+2] == ' '
+    # The classes_text could look like this: Fehlende Klassen  :  5b // too many 
+    # of those spaces. This trys to remove them.
+    classes_text = utils.remove_spaces(classes_text)
 
-        while classes_text[start_char+2] == ' ':
-            classes_text = "".join([
-                    classes_text[:start_char+2],
-                    classes_text[start_char+3:]
-                ])
-            try:
-                classes_text[start_char+2] == ' '
-            except:
-                break
-    except:
-        pass
-
+    classes_text_empty = check_if_empty(classes_text)
     if classes_text_empty:
         header_classes = None
     elif not classes_text_empty:
@@ -122,31 +92,8 @@ def parse_header(rows=None):
                         for i in teachers_text.contents)
 
     # The teacher_text looks mostly like this: Fehlende Lehrer  :  ST;LE; STF // too many 
-    # of those spaces. This trys to eliminate them:
-    start_char = teachers_replace.lower().find(':')
-    while teachers_replace[start_char-1] == ' ':
-        teachers_replace = "".join([
-                teachers_replace[:start_char-1],
-                teachers_replace[start_char:]
-            ])
-        start_char = teachers_replace.lower().find(':')
-
-    start_char = teachers_replace.lower().find(':')
-    
-    try:
-        classes_text[start_char+2] == ' '
-
-        while teachers_replace[start_char+2] == ' ':
-            teachers_replace = "".join([
-                    teachers_replace[:start_char+2],
-                    teachers_replace[start_char+3:]
-                ])
-            try:
-                teachers_replace[start_char+2] == ' '
-            except:
-                break
-    except:
-        pass
+    # of those spaces. This trys to remove them.
+    teachers_replace = utils.remove_spaces(teachers_replace)
 
     teachers_replace_empty = check_if_empty(teachers_replace)
     if teachers_replace_empty:
@@ -154,18 +101,18 @@ def parse_header(rows=None):
     elif not teachers_replace_empty:
         header_teachers = teachers_replace
 
-
     represen_classes = []
-    for row in rows:
-        if len(row) == 11:
-            school_class = convert_rows.parse_body_row(row=row, get_vertretungs_classes=True)
-
-            if school_class:
-                represen_classes.append(school_class)
-
-    if represen_classes:
-        represen_classes = sort_class_names(represen_classes)
-        represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+    if wclasses == "all":
+        for row in rows:
+            if len(row) == 11:
+                school_class = convert_rows.parse_body_row(row=row, get_vertretungs_classes=True)
+    
+                if school_class:
+                    represen_classes.append(school_class)
+    
+        if represen_classes:
+            represen_classes = sort_class_names(represen_classes)
+            represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
 
     if header_date:
         header_strg += header_date + '\n'

@@ -11,14 +11,9 @@ import sys
 
 from modules import utils
 
-def download_page(url, settings):
-    # Get the vertretungsplan website config as configparser.ConfigParser object
-    vp_conf = configparser.ConfigParser()
-    vp_conf.read(settings["configuration_path"]["vp_website_cfg"])
-
+def download_page(url, config):
     # download the page (authenticate with username and password from vp_conf)
-
-    return requests.get(url=url, auth=(vp_conf["creds"]["user"], vp_conf["creds"]["password"])).text
+    return requests.get(url=url, auth=(config["user"], config["password"])).text
 
 
 def get_weekday():
@@ -36,12 +31,12 @@ def get_weekday():
     today = arrow.utcnow().to("MET")
     return weekdays.get(today.isoweekday())
 
-def get_recent(settings):
+def get_recent(config):
     # Gets the vertretungsplan page from the internet
 
     search_wkd = get_weekday() # The weekday for which the program shall look for a vertretungsplan
 
     url = f"https://www.sachsen.schule/~gym-grossroehrsdorf/docs/vt/{search_wkd}.htm"
-    page = download_page(url=url, settings=settings)
+    page = download_page(url=url, config=config)
     print(f"Downloaded page from {url}")
     return page
