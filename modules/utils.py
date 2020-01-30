@@ -12,7 +12,7 @@ from modules.convert_prg import convert_rows
 
 def get_level_letter(string):
     # Uses re to get the level and the letter from a given string
-    regex = re.findall("(?P<level>[1-9]|1[0-2])(?P<letter>[a-z]*)", string)
+    regex = re.findall("(?P<level>1[0-2]|[1-9])(?P<letter>[a-z]*)", string)
 
     return regex
 
@@ -128,7 +128,7 @@ def get_validate_classes(message):
             for match in regex:
                 level = match[0]
                 letters = list(set(match[1])) # Sort out duplicated letters and put all in a list
-        
+
                 if level and len(letters) == 1:
                     if letters[0] in ["a", "b", "c", "d"]:
                         joined_class = "".join([level, letters[0]])

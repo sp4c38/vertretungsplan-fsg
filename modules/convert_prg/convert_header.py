@@ -101,18 +101,24 @@ def parse_header(rows, wclasses):
     elif not teachers_replace_empty:
         header_teachers = teachers_replace
 
-    represen_classes = []
-    if wclasses == "all":
+    represen_classes_unvalidated = [] # classes not validated
+    represen_classes = [] # classes validated
+    if "all" in wclasses:
         for row in rows:
             if len(row) == 11:
                 school_class = convert_rows.parse_body_row(row=row, get_vertretungs_classes=True)
     
                 if school_class:
-                    represen_classes.append(school_class)
-    
+                    represen_classes_unvalidated.append(school_class)
+        
+        for x in represen_classes_unvalidated:
+            y = utils.get_validate_classes(x) # Validate classes
+            for z in y["successful"]:
+                represen_classes.append(z)
+
         if represen_classes:
             represen_classes = sort_class_names(represen_classes)
-            represen_classes = ("Vertretung für: " + ", ".join(represen_classes))
+            represen_classes = f"Vertretung für: {', '.join(represen_classes)}"
 
     if header_date:
         header_strg += header_date + '\n'
