@@ -124,7 +124,7 @@ def check_replacement_lessons(rows, wclasses):
             instead_of_lesson = data[4].text.replace("\xa0", "").replace("\n", "")
             
             class_list = utils.get_validate_classes(school_class)["successful"]
-            
+
             if lesson_number:
                 current_lesson = lesson_number
                 repl_lessons[current_lesson] = False

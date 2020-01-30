@@ -12,7 +12,7 @@ from modules.convert_prg import convert_rows
 
 def get_level_letter(string):
     # Uses re to get the level and the letter from a given string
-    regex = re.search("^0*(?P<level>[1-9]|1[0-2])(?P<letter>[a-z]*)$", string)
+    regex = re.findall("(?P<level>[1-9]|1[0-2])(?P<letter>[a-z]*)", string)
 
     return regex
 
@@ -118,34 +118,36 @@ def get_validate_classes(message):
 
     splited_msg = message.split(",")
     validation_classes = {"successful": [], "unsuccessful": []}
-
+    
     for msg in splited_msg:
         regex = get_level_letter(msg)
-        if regex:
-            level = regex.groupdict()["level"]
-            letters = list(set(regex.groupdict()["letter"])) # Sort out duplicated letters and put all in a list
 
-        if not regex: # ! Must be first if
+        if not regex:
             validation_classes["unsuccessful"].append(msg)
-        elif level and len(letters) == 1:
-            if letters[0] in ["a", "b", "c", "d"]:
-                joined_class = "".join([level, letters[0]])
-                validation_classes["successful"].append(joined_class)
-            else:
-                validation_classes["unsuccessful"].append(msg)
-        elif level and len(letters) > 1:
-            for l in letters:
-                if l in ["a", "b", "c", "d"]:
-                    joined_class = "".join([level, l])
-                    validation_classes["successful"].append(joined_class)
-                else:
-                    joined_class = "".join([level, l])
-                    validation_classes["unsuccessful"].append(joined_class)
-        elif level and not letters:
-            for l in ["a", "b", "c", "d"]:
-                joined_class = "".join([level, l])
-                validation_classes["successful"].append(joined_class)
-        elif not level:
-            validation_classes["unsuccessful"].append(msg)
+        else:
+            for match in regex:
+                level = match[0]
+                letters = list(set(match[1])) # Sort out duplicated letters and put all in a list
+        
+                if level and len(letters) == 1:
+                    if letters[0] in ["a", "b", "c", "d"]:
+                        joined_class = "".join([level, letters[0]])
+                        validation_classes["successful"].append(joined_class)
+                    else:
+                        validation_classes["unsuccessful"].append(msg)
+                elif level and len(letters) > 1:
+                    for l in letters:
+                        if l in ["a", "b", "c", "d"]:
+                            joined_class = "".join([level, l])
+                            validation_classes["successful"].append(joined_class)
+                        else:
+                            joined_class = "".join([level, l])
+                            validation_classes["unsuccessful"].append(joined_class)
+                elif level and not letters:
+                    for l in ["a", "b", "c", "d"]:
+                        joined_class = "".join([level, l])
+                        validation_classes["successful"].append(joined_class)
+                elif not level:
+                    validation_classes["unsuccessful"].append(msg)
 
     return validation_classes

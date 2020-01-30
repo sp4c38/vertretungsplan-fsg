@@ -29,6 +29,6 @@ settings = {
 
     },
 
-    "debug": False, # A extra setting which helps debugging the program
+    "debug": True, # A extra setting which helps debugging the program
 
 }

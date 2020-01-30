@@ -67,6 +67,7 @@ def main():
 
             if not settings["debug"]: # Only send message if debug mode is disabled
                 chat_id_list = [r]
+                print(f"Sending message to {r}")
                 telegram.send_message(config=tele_config_all, config_uniformly=tele_config_uniformly, chat_id_list=chat_id_list, message=output)
     else:
         print("Not updated.")
