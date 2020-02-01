@@ -1,5 +1,5 @@
 from modules import handle_user
-from modules.commands import start, setup, myinfo
+from modules.commands import start, setup, myinfo, delete
 
 def check_fields(update):
     # Checks if all required fileds are present
@@ -15,13 +15,17 @@ def check_fields(update):
         return False
 
 def main(updates_storage, user_data, updates, tele_config, tele_config_uniformly, settings):
+    current_update_ids = []
+
     for update in updates["result"]:
+
         fields_completely = check_fields(update)
         
         if not fields_completely:
             continue
 
         update_id = str(update["update_id"])
+        current_update_ids.append(update_id)
 
         if not update_id in updates_storage["updates"]:
 
@@ -29,10 +33,16 @@ def main(updates_storage, user_data, updates, tele_config, tele_config_uniformly
 
             if update["message"]["text"].replace(" ", "").lower() == "/setup" or user["setup_mode"] == True:
                 print(f"User {user['user_id']} requested \"/setup\" or his setup mode is activated.")
-                setup.main(update, user, user_data, tele_config, tele_config_uniformly, settings)
+                setup.main(update, user, tele_config, tele_config_uniformly, settings)
+
             if update["message"]["text"].replace(" ", "").lower() == "/start":
                 print(f"User {user['user_id']} requested \"/start\"")
-                start.main(update, user, tele_config, tele_config_uniformly, settings)
+                start.main(user, tele_config, tele_config_uniformly, settings)
+
+            if update["message"]["text"].replace(" ", "").lower() == "/delete" or user["delete_mode"] == True:
+                print(f"User {user['user_id']} requested \"/delete\" or his delete mode is activated.")
+                delete.main(update, user, tele_config, tele_config_uniformly, settings)
+
             if update["message"]["text"].replace(" ", "").lower() == "/myinfo":
                 print(f"User {user['user_id']} requested \"/myinfo\"")
                 myinfo.main(update, user, tele_config, tele_config_uniformly, settings)
@@ -42,3 +52,10 @@ def main(updates_storage, user_data, updates, tele_config, tele_config_uniformly
         else:
             continue
 
+    to_sort_out = []
+    for x in updates_storage["updates"]:
+        if not x in current_update_ids:
+            to_sort_out.append(x)
+
+    for y in to_sort_out:
+        updates_storage["updates"].remove(y)

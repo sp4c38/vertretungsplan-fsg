@@ -173,3 +173,5 @@ def convert_body_footer(rows, wclasses):
         return body_strg + "\n" + footer
     elif body_strg:
         return body_strg
+    else:
+        return body_strg

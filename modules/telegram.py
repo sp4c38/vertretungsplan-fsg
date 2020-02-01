@@ -12,6 +12,7 @@ def send_message(config, config_uniformly, chat_id_list, message):
             "text": message,
             "disable_notification": False,
         }
+
         requests.post(url=url, data=data)
 
     return True

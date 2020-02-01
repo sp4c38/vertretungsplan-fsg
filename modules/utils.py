@@ -12,7 +12,7 @@ from modules.convert_prg import convert_rows
 
 def get_level_letter(string):
     # Uses re to get the level and the letter from a given string
-    regex = re.findall("(?P<level>1[0-2]|[1-9])(?P<letter>[a-z]*)", string)
+    regex = re.findall("(?P<level>1[0-2]|[1-9])[^a-z]*(?P<letter>[a-z]*)", string)
 
     return regex
 

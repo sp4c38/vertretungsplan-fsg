@@ -4,7 +4,7 @@ import re
 from modules import telegram, utils
 
 
-def main(update, user, user_data, tele_config, tele_config_uniformly, settings):
+def main(update, user, tele_config, tele_config_uniformly, settings):
     chat_id_list = [user["chat_id"]]
 
     if user["setup_mode"] == True and update["message"]["text"]:
@@ -32,18 +32,18 @@ def main(update, user, user_data, tele_config, tele_config_uniformly, settings):
 
             telegram.send_message(tele_config, tele_config_uniformly, chat_id_list, correct_msg)
             print("Send validation successful message.")
+
             if not validation_classes["unsuccessful"] and len(user["classes"]) == 1: # Send a happy message and activate the main markup keyboard again
                 stpmde_deactivated_msg = open(settings["messages"]["setup_mode_deactivated"]).readlines()[0] # Setup mode deactivated message
-                keyboardmarkup = json.load(open(settings["messages"]["main_markupkeyboard"]))
+                keyboardmarkup = json.load(open(settings["messages"]["main_keyboardmarkup"]))
                 telegram.send_msg_with_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, stpmde_deactivated_msg, keyboardmarkup)
-                print("Send setup mode deactivated message and reactivated the main markup keyboard.")
+                print("Send setup mode deactivated message and reactivated the main keyboard markup.")
             elif not validation_classes["unsuccessful"] and len(user["classes"]) > 1:
                 stpmde_deactivated_msg = open(settings["messages"]["setup_mode_deactivated"]).readlines()[1] # Setup mode deactivated message
-                keyboardmarkup = json.load(open(settings["messages"]["main_markupkeyboard"]))
+                keyboardmarkup = json.load(open(settings["messages"]["main_keyboardmarkup"]))
                 telegram.send_msg_with_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, stpmde_deactivated_msg, keyboardmarkup)
-                print("Send setup mode deactivated message and reactivated the main markup keyboard.")
+                print("Send setup mode deactivated message and reactivated the main keyboard markup.")
             
-
         if len(validation_classes["unsuccessful"]) > 0:
             if len(validation_classes["unsuccessful"]) == 1: # Do this if-function to use different messages for either singular or plural messages
                 not_correct_msg = open(settings["messages"]["validation_unsuccessful"]).readlines()[0]

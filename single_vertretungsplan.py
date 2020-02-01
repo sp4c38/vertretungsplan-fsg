@@ -28,12 +28,21 @@ def main():
 
     get_updates_url = tele_config_uniformly["get_updates_url"].format(tele_config["bot_token"])
 
-    # Running in a while-true loop with a time delay
+    # Running in a while-true loop with a time dela
+    newest_update_id = 0 # The newest update id, is used to handle many messages with offset
     while True:
         print("Checking for updates...")
-        updates = json.loads(requests.get(get_updates_url).text) # json.load(open("/home/leon/Desktop/data.txt")) # Updates from telegram api
+        if newest_update_id:
+            headers = {"offset":str(newest_update_id)}
+        else:
+            headers = {}
+
+        updates = json.loads(requests.get(url=get_updates_url, headers=headers).text) # Updates from telegram api
+        for x in updates["result"]: 
+            if x["update_id"] > newest_update_id: 
+                newest_update_id = x["update_id"]
+
         handle_updates.main(updates_storage, user_data, updates, tele_config, tele_config_uniformly, settings)
-        
         json.dump(updates_storage, open(settings["updates_file"], "w"))
         json.dump(user_data, open(settings["user_file"], "w"))
         print("Saved files.")

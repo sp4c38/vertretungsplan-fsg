@@ -13,8 +13,8 @@ def check_exists(user_data, update):
         user_data["users"][user_id] = {"user_id": user_id, # Store it again to make processing easier.
                                        "chat_id": chat_id,
                                        "setup_mode": False,
+                                       "delete_mode": False,
                                        "is_bot": update["message"]["from"]["is_bot"],
-                                       "language_code": update["message"]["from"]["language_code"],
                                        "classes": [],
                                       }
 
