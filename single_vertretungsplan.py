@@ -47,7 +47,19 @@ def main():
         json.dump(user_data, open(settings["user_file"], "w"))
         print("Saved files.")
         print()
-        time.sleep(5)
+
+        if settings["debug"]:
+            time.sleep(5)
+        else:
+            time.sleep(0.5)
 
 if __name__ == '__main__':
-    main()
+    if settings["debug"]: # settings["debug"]: True
+        main()
+    else: # settings["debug"]: False
+        try:
+            main()
+        except requests.exceptions.ConnectionError:
+            print("We had problems connecting to the internet.")
+        except:
+            print("The program was interrupted.")

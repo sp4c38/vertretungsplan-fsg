@@ -17,8 +17,10 @@ def send_message(config, config_uniformly, chat_id_list, message):
 
     return True
 
-def send_msg_with_keyboard_markup(config, config_uniformly, chat_id_list, message, keyboardmarkup):
-    # Send a message with keyboard markup
+def send_msg_keyboard_markup(config, config_uniformly, chat_id_list, message, keyboardmarkup):
+    # Send a normal message
+    # If keyboardmarkup is qual False: the current keyboard markup is removed
+    # If keyboardmarkup is a dictionary: this dict is send as the keyboard markup
 
     url = config_uniformly["send_message_url"].format(config["bot_token"])
 
@@ -27,8 +29,11 @@ def send_msg_with_keyboard_markup(config, config_uniformly, chat_id_list, messag
             "chat_id": chat_id,
             "text": message,
             "disable_notification": False,
-            "reply_markup": json.dumps(keyboardmarkup),
         }
+        if keyboardmarkup:
+            data["reply_markup"] = json.dumps(keyboardmarkup)
+        elif not keyboardmarkup:
+            data["reply_markup"] = json.dumps({"remove_keyboard":True})
 
         requests.post(url, data)
         

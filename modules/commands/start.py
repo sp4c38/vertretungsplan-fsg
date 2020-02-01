@@ -8,5 +8,5 @@ def main(user, tele_config, tele_config_uniformly, settings):
 
     keyboardmarkup = json.load(open(settings["messages"]["main_keyboardmarkup"]))
 
-    telegram.send_msg_with_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, start_text, keyboardmarkup)
+    telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, start_text, keyboardmarkup)
     print("Send start message and activated the main markup keyboard.")

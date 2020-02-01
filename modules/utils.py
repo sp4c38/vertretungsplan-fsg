@@ -120,34 +120,35 @@ def get_validate_classes(message):
     validation_classes = {"successful": [], "unsuccessful": []}
     
     for msg in splited_msg:
-        regex = get_level_letter(msg)
-
-        if not regex:
-            validation_classes["unsuccessful"].append(msg)
-        else:
-            for match in regex:
-                level = match[0]
-                letters = list(set(match[1])) # Sort out duplicated letters and put all in a list
-
-                if level and len(letters) == 1:
-                    if letters[0] in ["a", "b", "c", "d"]:
-                        joined_class = "".join([level, letters[0]])
-                        validation_classes["successful"].append(joined_class)
-                    else:
-                        validation_classes["unsuccessful"].append(msg)
-                elif level and len(letters) > 1:
-                    for l in letters:
-                        if l in ["a", "b", "c", "d"]:
-                            joined_class = "".join([level, l])
+        if msg:
+            regex = get_level_letter(msg)
+    
+            if not regex:
+                validation_classes["unsuccessful"].append(msg)
+            else:
+                for match in regex:
+                    level = match[0]
+                    letters = list(set(match[1])) # Sort out duplicated letters and put all in a list
+    
+                    if level and len(letters) == 1:
+                        if letters[0] in ["a", "b", "c", "d"]:
+                            joined_class = "".join([level, letters[0]])
                             validation_classes["successful"].append(joined_class)
                         else:
+                            validation_classes["unsuccessful"].append(msg)
+                    elif level and len(letters) > 1:
+                        for l in letters:
+                            if l in ["a", "b", "c", "d"]:
+                                joined_class = "".join([level, l])
+                                validation_classes["successful"].append(joined_class)
+                            else:
+                                joined_class = "".join([level, l])
+                                validation_classes["unsuccessful"].append(joined_class)
+                    elif level and not letters:
+                        for l in ["a", "b", "c", "d"]:
                             joined_class = "".join([level, l])
-                            validation_classes["unsuccessful"].append(joined_class)
-                elif level and not letters:
-                    for l in ["a", "b", "c", "d"]:
-                        joined_class = "".join([level, l])
-                        validation_classes["successful"].append(joined_class)
-                elif not level:
-                    validation_classes["unsuccessful"].append(msg)
+                            validation_classes["successful"].append(joined_class)
+                    elif not level:
+                        validation_classes["unsuccessful"].append(msg)
 
     return validation_classes
