@@ -1,5 +1,5 @@
 from modules import handle_user
-from modules.commands import start, setup, myinfo, delete
+from modules.commands import start, setup, mydata, delete, help_me
 
 def check_fields(update):
     # Checks if all required fileds are present
@@ -30,25 +30,29 @@ def main(updates_storage, user_data, updates, tele_config, tele_config_uniformly
         if not update_id in updates_storage["updates"]:
 
             user = handle_user.check_exists(user_data, update) # Returns user information
+            msg_text = update["message"]["text"].lower()
 
-            if update["message"]["text"].replace(" ", "").lower() == "/setup" or user["setup_mode"] == True:
-                print(f"User {user['user_id']} requested \"/setup\" or his setup mode is activated.")
+            if msg_text == "einrichten" or user["setup_mode"] == True:
+                print(f"User {user['user_id']} requested \"einrichten\" or his setup mode is activated.")
                 setup.main(update, user, tele_config, tele_config_uniformly, settings)
 
-            if update["message"]["text"].replace(" ", "").lower() == "/start":
-                print(f"User {user['user_id']} requested \"/start\"")
+            if msg_text == "/start":
+                print(f"User {user['user_id']} requested \"start\"")
                 start.main(user, tele_config, tele_config_uniformly, settings)
 
-            if update["message"]["text"].replace(" ", "").lower() == "/delete" or user["delete_mode"] == True:
-                print(f"User {user['user_id']} requested \"/delete\" or his delete mode is activated.")
+            if msg_text == "löschen" or user["delete_mode"] == True:
+                print(f"User {user['user_id']} requested \"löschen\" or his delete mode is activated.")
                 delete.main(update, user, tele_config, tele_config_uniformly, settings)
 
-            if update["message"]["text"].replace(" ", "").lower() == "/myinfo":
-                print(f"User {user['user_id']} requested \"/myinfo\"")
-                myinfo.main(update, user, tele_config, tele_config_uniformly, settings)
+            if msg_text == "meine daten":
+                print(f"User {user['user_id']} requested \"meine daten\"")
+                mydata.main(update, user, tele_config, tele_config_uniformly, settings)
+
+            if msg_text == "hilfe":
+                print(f"User {user['user_id']} requested \"hilfe\"")
+                help_me.main(user, tele_config, tele_config_uniformly, settings)
 
             updates_storage["updates"].append(update_id)
-
         else:
             continue
 

@@ -20,20 +20,23 @@ settings = {
     "user_file": os.path.join(BASE_DIR, "data", "user_data.json"),
     "messages": { # Pre-wrote messages
         "main_keyboardmarkup": os.path.join(BASE_DIR, "messages", "main_keyboard_markup.txt"),
-        "delete_keyboardmarkup": os.path.join(BASE_DIR, "messages", "delete_keyboard_markup.txt"),
 
-        "start": os.path.join(BASE_DIR, "messages", "start.txt"),
-        "help": os.path.join(BASE_DIR, "messages", "help.txt"),
-        "myinfo": os.path.join(BASE_DIR, "messages", "myinfo.txt"),
+        "start": os.path.join(BASE_DIR, "messages", "start", "start.txt"),
 
-        "delete": os.path.join(BASE_DIR, "messages", "delete.txt"),
-        "delete_mode_successful": os.path.join(BASE_DIR, "messages", "delete_mode_successful.txt"),
-        "delete_mode_unsuccessful": os.path.join(BASE_DIR, "messages", "delete_mode_unsuccessful.txt"),
+        "setup": os.path.join(BASE_DIR, "messages", "setup", "setup.txt"),
+        "setup_mode_deactivated": os.path.join(BASE_DIR, "messages", "setup", "setup_mode_deactivated.txt"),
+        "validation_successful": os.path.join(BASE_DIR, "messages", "setup", "validation_successful.txt"),
+        "validation_unsuccessful": os.path.join(BASE_DIR, "messages", "setup", "validation_unsuccessful.txt"),
+            
+        "myinfo": os.path.join(BASE_DIR, "messages", "myinfo", "myinfo.txt"),
 
-        "setup": os.path.join(BASE_DIR, "messages", "setup.txt"),
-        "setup_mode_deactivated": os.path.join(BASE_DIR, "messages", "setup_mode_deactivated.txt"),
-        "validation_successful": os.path.join(BASE_DIR, "messages", "validation_successful.txt"),
-        "validation_unsuccessful": os.path.join(BASE_DIR, "messages", "validation_unsuccessful.txt"),
+        "delete": os.path.join(BASE_DIR, "messages", "delete", "delete.txt"),
+        "delete_keyboard_markup": os.path.join(BASE_DIR, "messages", "delete", "delete_keyboard_markup.txt"),
+        "delete_mode_successful": os.path.join(BASE_DIR, "messages", "delete", "delete_mode_successful.txt"),
+        "delete_mode_unsuccessful": os.path.join(BASE_DIR, "messages", "delete", "delete_mode_unsuccessful.txt"),
+        "no_classes_to_delete": os.path.join(BASE_DIR, "messages", "delete", "no_classes_to_delete.txt"),
+
+        "help": os.path.join(BASE_DIR, "messages", "help", "help.txt"),
     },
 
     "debug": False, # A extra setting which helps debugging the program

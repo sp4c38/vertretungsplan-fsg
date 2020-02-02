@@ -26,6 +26,7 @@ def main(update, user, tele_config, tele_config_uniformly, settings):
             keyboardmarkup = json.load(open(settings["messages"]["main_keyboardmarkup"]))
             telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, successfully_deleted, keyboardmarkup)
             print("Send deletion successful message and reactivated the main keyboard markup.")
+            return
         else:
             print("User wants to keep his classes")
             user["delete_mode"] = False
@@ -39,15 +40,24 @@ def main(update, user, tele_config, tele_config_uniformly, settings):
             keyboardmarkup = json.load(open(settings["messages"]["main_keyboardmarkup"]))
             telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, not_deleted, keyboardmarkup)
             print("Send deletion unsuccessful message and reactivated the main keyboard markup.")
+            return
 
     else:
-        user["delete_mode"] = True
-        print(f"Enabled delete_mode for user {user['user_id']}")
+        if user["classes"]:
+            user["delete_mode"] = True
+            print(f"Enabled delete_mode for user {user['user_id']}")
+        
+            delete_text = open(settings["messages"]["delete"]).read()
+            delete_text = delete_text.format(", ".join(user["classes"]))
     
-        delete_text = open(settings["messages"]["delete"]).read()
-        delete_text = delete_text.format(", ".join(user["classes"]))
-
-        keyboardmarkup = json.load(open(settings["messages"]["delete_keyboardmarkup"]))
-    
-        telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, delete_text, keyboardmarkup)
-        print("Send delete validation message.")
+            keyboardmarkup = json.load(open(settings["messages"]["delete_keyboard_markup"]))
+        
+            telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, delete_text, keyboardmarkup)
+            print("Send delete validation message.")  
+            return
+        
+        elif not user["classes"]:
+            no_classes_to_delete = open(settings["messages"]["no_classes_to_delete"]).read()
+            telegram.send_message(tele_config, tele_config_uniformly, chat_id_list, no_classes_to_delete)
+            print(f"Send no-classes-to-delete message to user {user['user_id']}")
+            return

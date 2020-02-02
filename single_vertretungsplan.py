@@ -37,7 +37,7 @@ def main():
         else:
             headers = {}
 
-        updates = json.loads(requests.get(url=get_updates_url, headers=headers).text) # Updates from telegram api
+        updates = json.loads(requests.get(get_updates_url, headers).text) # Updates from telegram api
         for x in updates["result"]: 
             if x["update_id"] > newest_update_id: 
                 newest_update_id = x["update_id"]
