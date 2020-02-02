@@ -62,7 +62,7 @@ def backup_vertretungsplan(settings, to_save):
     
     time = arrow.utcnow().to("MET")
     backup_dir_path = os.path.join(settings["backup_path"], str(time.year), time.format("MM")) # Only directory path
-    backup_file_path = os.path.join(backup_dir_path, time.format("DD-MM-YYYY_HH:mm.txt")) # Directory and file path
+    backup_file_path = os.path.join(backup_dir_path, f"{time.format('DD-MM-YYYY_HH:mm')}.html") # Directory and file path
 
     recent_info_path = settings["recent_info"]
     config = configparser.ConfigParser()

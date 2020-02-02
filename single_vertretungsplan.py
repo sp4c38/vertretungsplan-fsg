@@ -10,7 +10,7 @@ from settings import settings
 def get_config(settings):
     tele_config = configparser.ConfigParser() # The telegram config for single_vertretungsplan
     tele_config.read(settings["configuration_path"]["telgram_cfg"])
-    tele_config = tele_config["single_telegram_cfg"]
+    tele_config = tele_config["telegram_cfg"]
 
     # Uniformly configurations are used both in single_ver* and all_ver* 
     tele_config_uniformly= configparser.ConfigParser() # The uniformly (einheitlich) config
@@ -38,7 +38,8 @@ def main():
             headers = {}
 
         updates = json.loads(requests.get(get_updates_url, headers).text) # Updates from telegram api
-        for x in updates["result"]: 
+        
+        for x in updates["result"]:
             if x["update_id"] > newest_update_id: 
                 newest_update_id = x["update_id"]
 
