@@ -1,5 +1,4 @@
-"""Generic code for Vertretungsplan
-"""
+# Generic code for the vertretungsplan program
 
 import arrow
 import configparser
@@ -53,7 +52,7 @@ def get_date_from_page(text=None):
         # Add the current century
         date_match['year'] += 2000
 
-    return  arrow.get(datetime.date(**date_match))
+    return arrow.get(datetime.date(**date_match))
 
 def backup_vertretungsplan(settings, to_save):
     # This function backs up the vertretungsplan. This is used to recognise that a vertretungsplan was already

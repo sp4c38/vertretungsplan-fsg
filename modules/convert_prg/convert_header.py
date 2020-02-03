@@ -71,8 +71,8 @@ def parse_header(rows, wclasses):
         7: "Sonntag",
     }
 
-    header_date = f"Vertretungsplan für: {day_relation[int(date.format('d'))]}, "\
-                  f"{date.day}.{date.month}.{date.year} {emoji.emojize(':exploding_head:', use_aliases=True )}"
+    header_date = f"{day_relation[int(date.format('d'))]}, {date.day}.{date.month}.{date.year}"
+    header_text = f"Vertretungsplan für: {header_date} {emoji.emojize(':exploding_head:', use_aliases=True )}"
 
     classes_text = header_row[1].find('span').text.replace("\n", "").replace("\xa0", "")
     
@@ -132,4 +132,4 @@ def parse_header(rows, wclasses):
 
     header_strg += "\nKlasse | Fach | Vertretung durch: (Fach) | statt\n"
 
-    return header_strg
+    return header_strg, header_date

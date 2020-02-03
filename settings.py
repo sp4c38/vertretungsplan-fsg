@@ -19,6 +19,10 @@ settings = {
     "updates_file": os.path.join(BASE_DIR, "data","updates_data.json"),
     "user_file": os.path.join(BASE_DIR, "data", "user_data.json"),
     "messages": { # Pre-wrote messages
+        # Used by vertretungsplan
+        "no_vertretung": os.path.join(BASE_DIR, "messages", "vertretungsplan", "no_vertretung.txt"),
+
+        # Used by single_vertretungsplan
         "main_keyboardmarkup": os.path.join(BASE_DIR, "messages", "main_keyboard_markup.txt"),
 
         "start": os.path.join(BASE_DIR, "messages", "start", "start.txt"),

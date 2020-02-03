@@ -61,14 +61,17 @@ def main():
 
         for r in recipients: # Convert for each recipient
             # wclasses: wanted classes
-            header = convert_header.parse_header(rows=rows, wclasses=recipients[r]) # Convert the header
+            header, date = convert_header.parse_header(rows=rows, wclasses=recipients[r]) # Get back the header and the date from the page
             body = convert_rows.convert_body_footer(rows=rows, wclasses=recipients[r]) # Convert the body and the footer
-            output = header + body
+
+            # Body or header could be empty / if body is empty a message will tell the user that there's no vertretung:
+            output = convert_rows.check_header_body(header, body, date, recipients[r], settings)
 
             if not settings["debug"]: # Only send message if debug mode is disabled
                 chat_id_list = [r]
                 print(f"Sending message to {r}")
-                telegram.send_message(config=tele_config_all, config_uniformly=tele_config_uniformly, chat_id_list=chat_id_list, message=output)
+                telegram.send_message(config=tele_config_all, config_uniformly=tele_config_uniformly, \
+                                      chat_id_list=chat_id_list, message=output)
     else:
         print("Not updated.")
 

@@ -8,7 +8,26 @@ from modules import utils
 from modules.convert_prg import convert_header
 
 
-def get_rows(file=None):
+def check_header_body(header, body, date, to_recive, settings):
+    # header ... converted header
+    # body ... converted body
+    # date ... date from page as beautiful string
+    # to_recive ... the classes which the user shall recive
+    
+    if not body:
+        if "all" in to_recive:
+            no_vertretung = open(settings["messages"]["no_vertretung"]).readlines()[0].replace("\n", "")
+            no_vertretung = no_vertretung.format(date)
+            return no_vertretung
+        else:
+            no_vertretung = open(settings["messages"]["no_vertretung"]).readlines()[1].replace("\n", "")
+            no_vertretung = no_vertretung.format(date)
+            return no_vertretung
+
+    elif header and body:
+        return header + body
+
+def get_rows(file):
     beautiful_file = BeautifulSoup(file, features="html.parser")
     tables = beautiful_file.findChildren('table', attrs={'class': ['MsoNormalTable']})
 
