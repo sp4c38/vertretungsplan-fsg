@@ -36,7 +36,7 @@ def get_recent(config):
 
     search_wkd = get_weekday() # The weekday for which the program shall look for a vertretungsplan
 
-    url = f"https://www.sachsen.schule/~gym-grossroehrsdorf/docs/vt/{search_wkd}.htm"
+    url = config["website"].format(search_wkd)
     page = download_page(url=url, config=config)
     print(f"Downloaded page from {url}")
     return page
