@@ -120,8 +120,8 @@ def parse_header(rows, wclasses):
             represen_classes = sort_class_names(represen_classes)
             represen_classes = f"Vertretung für: {', '.join(represen_classes)}"
 
-    if header_date:
-        header_strg += header_date + '\n'
+    if header_text:
+        header_strg += header_text + '\n'
     if header_classes:
         header_strg += header_classes + '\n'
     if header_teachers:
