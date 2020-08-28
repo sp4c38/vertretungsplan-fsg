@@ -5,6 +5,7 @@ import arrow
 import configparser
 import json
 import requests
+import traceback
 
 from modules import check_updated
 from modules import  poll_plan
@@ -35,7 +36,6 @@ def get_prerequisites(settings):
 
 
 def main():
-    print(f"Session started {arrow.utcnow().format()}.\n")
     vp_config, tele_config_all, tele_config_uniformly, user_data = get_prerequisites(settings)
     # Have chat_id-recipient point at the classes wanted / "all" are all classes | i.e.: 123 -> 8b,6c or 321 -> "all"
     recipients = {user_data["users"][x]["chat_id"]:user_data["users"][x]["classes"] for x in user_data["users"]}
@@ -75,16 +75,17 @@ def main():
     else:
         print("Not updated.")
 
-    print(f"\nSession ended {arrow.utcnow().format()}.")
 
 if __name__ == '__main__':
-    if settings["debug"]: # settings["debug"]: True
+    try:
+        print(f"Session started {arrow.utcnow().format()}.\n")
         main()
-    else: # settings["debug"]: False
-        try:
-            main()
-        except requests.exceptions.ConnectionError:
-            print("We had problems connecting to the internet.")
-        except:
-            print("The program was interrupted.")
-    
+        print(f"\nSession ended {arrow.utcnow().format()}.")
+
+    except requests.exceptions.ConnectionError:
+        print("Problems connecting to the internet.")
+        print(f"\nSession ended {arrow.utcnow().format()}.")
+
+    except Exception as exception:
+        traceback.print_exc()
+        print(f"\nSession ended {arrow.utcnow().format()}.")
