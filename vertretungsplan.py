@@ -18,62 +18,82 @@ from modules.convert_prg import convert_header, convert_rows
 
 
 def get_prerequisites(settings):
-    vp_config = configparser.ConfigParser()
-    vp_config.read(settings["configuration_path"]["vp_website_cfg"])
-    vp_config = vp_config["creds"]
+    # vertretungsplan config file
+    vp_config_file = configparser.ConfigParser()
+    vp_config_file.read(settings["configuration_path"]["vp_website"])
 
-    tele_config = configparser.ConfigParser()
-    tele_config.read(settings["configuration_path"]["telgram_cfg"])
-    tele_config_all = tele_config["telegram_cfg"]
+    vp_config = vp_config_file["creds"]
 
-    tele_config_uniformly = configparser.ConfigParser()
-    tele_config_uniformly.read(settings["configuration_path"]["telgram_cfg"])
-    tele_config_uniformly = tele_config_uniformly["uniformly"] # Configurations which are uniformly
+    # telegram config file
+    telegram_config_file = configparser.ConfigParser()
+    telegram_config_file.read(settings["configuration_path"]["telegram"])
 
+    telegram_config = telegram_config_file["telegram_cfg"]
+    telegram_api = telegram_config_file["telegram_api_urls"]
+
+    # Data of registered users
     user_data = json.load(open(settings["user_file"]))
 
-    return vp_config, tele_config_all, tele_config_uniformly, user_data
+    return vp_config, telegram_config, telegram_api, user_data
 
 
 def main():
-    vp_config, tele_config_all, tele_config_uniformly, user_data = get_prerequisites(settings)
-    # Have chat_id-recipient point at the classes wanted / "all" are all classes | i.e.: 123 -> 8b,6c or 321 -> "all"
-    recipients = {user_data["users"][x]["chat_id"]:user_data["users"][x]["classes"] for x in user_data["users"]}
+    vp_config, telegram_config, telegram_api, user_data = get_prerequisites(settings)
 
-    reciving_groups = [y for y in tele_config_all["group_chat_ids"].split(",") if y]
-    for g in reciving_groups:
-        recipients[g] = ["all"]
+    # Get all recipients (single users and telegram groups)
+    # For single users assign the chat id as key to the classes the user will get vertretung
+    # Add all groups to the recipients["all"] list because they get vertretung for all classes
+    recipients = {"all": []}
+    for user in user_data["users"]:
+        recipients[user_data["users"][user]["chat_id"]] = user_data["users"][user]["classes"]
 
-    stored_vp = utils.get_stored(settings=settings)
-    recent_vp = poll_plan.get_recent(config=vp_config)
+    for group in telegram_config["group_chat_ids"].split(","):
+        recipients["all"].append(group)
 
-    updated = check_updated.compare(srd_vp=stored_vp, rct_vp=recent_vp)
+    stored_vp = utils.get_stored(settings=settings) # Last local stored vertretungplan
+    current_vp = poll_plan.get_recent(config=vp_config) # Current vertretungsplan from the website of the FSG
 
+    updated = check_updated.compare(stored_vp=stored_vp, current_vp=current_vp)
+    updated = True
     if updated:
-        print("Updated.")
-        if not settings["debug"]:
-            utils.backup_vertretungsplan(settings=settings, to_save=recent_vp) # Save the vertretungsplan to backups
+        print("Updated")
+
+        utils.backup_vertretungsplan(settings=settings, to_save=current_vp) # Save the vertretungsplan to backups
         # Find table and rows in that table
+
         print("Converting...")
-        rows = convert_rows.get_rows(file=recent_vp)
-        # Pop to remove Klasse | Fach ... row from rows, because we aren't needing this.
+        rows = convert_rows.get_rows(file=current_vp)
+
+        # Pop to remove Klasse | Fach ... row from rows
+        # This is added as hard-coded data later
         rows.pop(1)
 
-        for r in recipients: # Convert for each recipient
+        for rcpt in recipients: # Convert for each recipient
             # wclasses: wanted classes
-            header, date = convert_header.parse_header(rows=rows, wclasses=recipients[r]) # Get back the header and the date from the page
-            body = convert_rows.convert_body_footer(rows=rows, wclasses=recipients[r]) # Convert the body and the footer
+            if rcpt == "all":
+                header, date = convert_header.parse_header(rows = rows, wclasses = ["all"]) # Get back the header and the date from the page
+                body = convert_rows.convert_body_footer(rows = rows, wclasses = ["all"]) # Convert the body and the footer
 
-            # Body or header could be empty / if body is empty a message will tell the user that there's no vertretung:
-            output = convert_rows.check_header_body(header, body, date, recipients[r], settings)
+                # Merge the header and the body
+                # If the body is empty a message will be inserted for the body which tells the user that there is not vertretung
+                output = convert_rows.merge_header_body(header, body, date, ["all"], settings)
 
-            if not settings["debug"]: # Only send message if debug mode is disabled
-                chat_id_list = [r]
-                print(f"Sending message to {r}")
-                telegram.send_message(config=tele_config_all, config_uniformly=tele_config_uniformly, \
-                                      chat_id_list=chat_id_list, message=output)
+                print(f"Sending message to {recipients[rcpt]}.")
+                telegram.send_message(config = telegram_config, telegram_api = telegram_api,
+                                      chat_id_list = recipients[rcpt], message = output)
+            else:
+                header, date = convert_header.parse_header(rows = rows, wclasses = recipients[rcpt]) # Get back the header and the date from the page
+                body = convert_rows.convert_body_footer(rows = rows, wclasses = recipients[rcpt]) # Convert the body and the footer
+
+                # Merge the header and the body
+                # If the body is empty a message will be inserted for the body which tells the user that there is not vertretung
+                output = convert_rows.merge_header_body(header, body, date, recipients[rcpt], settings)
+
+                print(f"Sending message to {rcpt}.")
+                telegram.send_message(config = telegram_config, telegram_api = telegram_api,
+                                      chat_id_list = [rcpt], message = output)
     else:
-        print("Not updated.")
+        print("Not updated")
 
 
 if __name__ == '__main__':

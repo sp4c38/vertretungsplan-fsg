@@ -17,7 +17,7 @@ def get_level_letter(string):
 
 def get_stored(settings):
     # Gets the most recent stored vertretungsplan file and return the path to it, if none is found None is returned
-    
+
     config = configparser.ConfigParser()
     config.read(settings["recent_info"])
 
@@ -56,9 +56,9 @@ def get_date_from_page(text=None):
 
 def backup_vertretungsplan(settings, to_save):
     # This function backs up the vertretungsplan. This is used to recognise that a vertretungsplan was already
-    # send a previouse time and doesn't have to be send again, 
-    # but it is also usefull for analyzing the data later (to do some stats).
-    
+    # send a previouse time and doesn't have to be send again,
+    # but it is also useful for analyzing the data later.
+
     time = arrow.utcnow().to("MET")
     backup_dir_path = os.path.join(settings["backup_path"], str(time.year), time.format("MM")) # Only directory path
     backup_file_path = os.path.join(backup_dir_path, f"{time.format('DD-MM-YYYY_HH:mm')}.html") # Directory and file path
@@ -76,11 +76,11 @@ def backup_vertretungsplan(settings, to_save):
 
     with open(recent_info_path, "w") as info_file:
         config.write(info_file)
-    
+
     return
 
 def remove_spaces(string):
-    # The teacher_text looks mostly like this: Fehlende Lehrer  :  ST;LE; STF // too many 
+    # The teacher_text looks mostly like this: Fehlende Lehrer  :  ST;LE; STF // too many
     # of those spaces. This trys to remove them:
     start_char = string.lower().find(':')
     while string[start_char-1] == ' ':
@@ -89,7 +89,7 @@ def remove_spaces(string):
                 string[start_char:]
             ])
         start_char = string.lower().find(':')
-    
+
     start_char = string.lower().find(':')
     try:
         while string[start_char+2] == ' ':
@@ -117,18 +117,18 @@ def get_validate_classes(message):
 
     splited_msg = message.split(",")
     validation_classes = {"successful": [], "unsuccessful": []}
-    
+
     for msg in splited_msg:
         if msg:
             regex = get_level_letter(msg)
-    
+
             if not regex:
                 validation_classes["unsuccessful"].append(msg)
             else:
                 for match in regex:
                     level = match[0]
                     letters = list(set(match[1])) # Sort out duplicated letters and put all in a list
-    
+
                     if level and len(letters) == 1:
                         if letters[0] in ["a", "b", "c", "d"]:
                             joined_class = "".join([level, letters[0]])

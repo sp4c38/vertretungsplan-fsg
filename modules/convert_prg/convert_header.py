@@ -10,7 +10,7 @@ from modules.convert_prg import convert_rows
 
 def check_if_empty(check_strg=None):
     """
-    We need a special method for checking, if specific things are empty. For example if 
+    We need a special method for checking, if specific things are empty. For example if
     there are no classes, which are missing or if there are no teachers, which are missing.
     """
     seperator = check_strg.lower().find(':')
@@ -24,7 +24,7 @@ def check_if_empty(check_strg=None):
 def sort_class_names(represen_classes=None):
     # Return a list of sorted class names
     duplicated_classes = [] # This list includes classes, but they could occur multiple times.
-    
+
     for class_name in represen_classes:
         level = re.search('\d+', class_name) # The level of the school class a.e.: 2,4,7,10,12, re.search returns None if nothing is found and _sre.SRE_Match when a level is found
 
@@ -58,7 +58,7 @@ def parse_header(rows, wclasses):
     header_row = rows[0].findAll("p")
     date_row = header_row[0]
     date_text = date_row.text.replace('\n', '')
-        
+
     date = utils.get_date_from_page(date_text)
 
     day_relation = {
@@ -75,8 +75,8 @@ def parse_header(rows, wclasses):
     header_text = f"Vertretungsplan für: {header_date} {emoji.emojize(':face_with_medical_mask:', use_aliases=True )}"
 
     classes_text = header_row[1].find('span').text.replace("\n", "").replace("\xa0", "")
-    
-    # The classes_text could look like this: Fehlende Klassen  :  5b // too many 
+
+    # The classes_text could look like this: Fehlende Klassen  :  5b // too many
     # of those spaces. This trys to remove them.
     classes_text = utils.remove_spaces(classes_text)
 
@@ -91,7 +91,7 @@ def parse_header(rows, wclasses):
     teachers_replace = " ".join(str(i).replace('\n', '').replace('<i> </i>', '').replace('\xa0', '').replace('<i></i>', '')
                         for i in teachers_text.contents)
 
-    # The teacher_text looks mostly like this: Fehlende Lehrer  :  ST;LE; STF // too many 
+    # The teacher_text looks mostly like this: Fehlende Lehrer  :  ST;LE; STF // too many
     # of those spaces. This trys to remove them.
     teachers_replace = utils.remove_spaces(teachers_replace)
 
@@ -107,10 +107,10 @@ def parse_header(rows, wclasses):
         for row in rows:
             if len(row) == 11:
                 school_class = convert_rows.parse_body_row(row=row, get_vertretungs_classes=True)
-    
+
                 if school_class:
                     represen_classes_unvalidated.append(school_class)
-        
+
         for x in represen_classes_unvalidated:
             y = utils.get_validate_classes(x) # Validate classes
             for z in y["successful"]:
@@ -128,7 +128,7 @@ def parse_header(rows, wclasses):
         header_strg += header_teachers + '\n'
     if represen_classes:
         header_strg += represen_classes + '\n'
-    
+
 
     header_strg += "\nKlasse | Fach | Vertretung durch: (Fach) | statt\n"
 

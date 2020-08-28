@@ -34,7 +34,7 @@ def get_weekday():
 def get_recent(config):
     # Gets the vertretungsplan page from the internet
 
-    search_wkd = get_weekday() # The weekday for which the program shall look for a vertretungsplan
+    search_wkd = get_weekday() # Weekday the script shall look for a vertretungsplan
 
     url = config["website"].format(search_wkd)
     page = download_page(url=url, config=config)

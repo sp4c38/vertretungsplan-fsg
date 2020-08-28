@@ -8,12 +8,12 @@ from modules import utils
 from modules.convert_prg import convert_header
 
 
-def check_header_body(header, body, date, to_recive, settings):
+def merge_header_body(header, body, date, to_recive, settings):
     # header ... converted header
     # body ... converted body
     # date ... date from page as beautiful string
-    # to_recive ... the classes which the user shall recive
-    
+    # to_recive ... the classes which the user will recive
+
     if not body:
         if "all" in to_recive:
             no_vertretung = open(settings["messages"]["no_vertretung"]).readlines()[0].replace("\n", "")
@@ -36,13 +36,13 @@ def get_rows(file):
         sys.exit(1)
 
     table = tables[0]
-        
+
     rows = table.findChildren(['tr'])
-    
+
     if not rows:
         print("Could not find any rows in the MsoNormalTable.")
         sys.exit(1)
-    
+
     return rows
 
 def check_contains(class_list, wclasses):
@@ -104,12 +104,11 @@ def parse_body_row(row=None, replacement_lessons=None, get_vertretungs_classes=F
             data_together = f" {' | '.join(data_sorted)}\n"
 
     elif lesson_number and not any(data_sorted) and replacement_lessons[lesson_number] == True:
-        print("lol", lesson_number)
         data_together = f"\n{lesson_number}:\n"
 
     return data_together
-    
-    
+
+
 def parse_footer_row(row):
 
     footer_paragraphs = row.findAll('p')
@@ -131,7 +130,7 @@ def check_replacement_lessons(rows, wclasses):
     #                          False if there isn't any data in the colums between (a.e. 2.Std. until 3.Std.)
 
     repl_lessons = {"reversed_no_vertretung": []}
-    
+
     current_lesson = None
     for row in rows:
         if len(row) == 11:
@@ -141,7 +140,7 @@ def check_replacement_lessons(rows, wclasses):
             would_have_hour = data[2].text.replace("\xa0", "").replace("\n", "")
             replacement = data[3].text.replace("\xa0", "").replace("\n", "")
             instead_of_lesson = data[4].text.replace("\xa0", "").replace("\n", "")
-            
+
             class_list = utils.get_validate_classes(school_class)["successful"]
 
             if lesson_number:

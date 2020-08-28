@@ -11,8 +11,8 @@ settings = {
     "recent_info": os.path.join(BASE_DIR, "backups", "recent.info"), # Configparser file which stores the most recent stored vertretungsplan
 
     "configuration_path": { # Configparser configuration files for telegram (group id,...) and vertretungsplan setting
-        "vp_website_cfg": os.path.join(BASE_DIR, "config", "vp_website.ini"),
-        "telgram_cfg": os.path.join(BASE_DIR, "config", "telegram.ini"),
+        "vp_website": os.path.join(BASE_DIR, "config", "vp_website.ini"),
+        "telegram": os.path.join(BASE_DIR, "config", "telegram.ini"),
     },
 
     "updates_file": os.path.join(BASE_DIR, "data","updates_data.json"),
