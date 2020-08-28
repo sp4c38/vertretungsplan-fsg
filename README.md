@@ -2,7 +2,7 @@
 
 Vertretungsplan-FSG is a python project which displays the Vertretungsplan from my school in a for students accessiable place: A Messenger. It also makes to whole process alot easier.
 
-<img src="https://raw.githubusercontent.com/sp4c38/vertretungsplan-fsg/master/Display_Assets/telegram_group_icon.png" height=50>
+<img alt="Telegram Group Icon" src="https://raw.githubusercontent.com/sp4c38/vertretungsplan-fsg/master/Display_Assets/telegram_group_icon.png" height=50>
 
 So initially it's a messenger bot and a webscraper for my schools website which holds the Vertretungplan.
 
@@ -13,5 +13,4 @@ Why don't just visit the website and read the Vertretungsplan there? Each time y
 Telegram offers a powerful API.
 
 ### A sample output:
-![Telegram Chat Example](https://raw.githubusercontent.com/sp4c38/vertretungsplan-fsg/master/Display_Assets/telegram_chat_example.png)
-
+<img alt="Telegram Chat Example" src="https://raw.githubusercontent.com/sp4c38/vertretungsplan-fsg/master/Display_Assets/telegram_chat_example.png" height=750>
