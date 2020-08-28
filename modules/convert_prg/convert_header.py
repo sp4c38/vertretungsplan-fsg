@@ -72,7 +72,7 @@ def parse_header(rows, wclasses):
     }
 
     header_date = f"{day_relation[int(date.format('d'))]}, {date.day}.{date.month}.{date.year}"
-    header_text = f"Vertretungsplan für: {header_date} {emoji.emojize(':exploding_head:', use_aliases=True )}"
+    header_text = f"Vertretungsplan für: {header_date} {emoji.emojize(':face_with_medical_mask:', use_aliases=True )}"
 
     classes_text = header_row[1].find('span').text.replace("\n", "").replace("\xa0", "")
     

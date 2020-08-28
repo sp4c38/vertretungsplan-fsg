@@ -23,7 +23,7 @@ def get_prerequisites(settings):
 
     tele_config = configparser.ConfigParser()
     tele_config.read(settings["configuration_path"]["telgram_cfg"])
-    tele_config_all = tele_config["telegram_cfg"] # Using _all here because there is one section for all_ver* and one for single_ver*
+    tele_config_all = tele_config["telegram_cfg"]
 
     tele_config_uniformly = configparser.ConfigParser()
     tele_config_uniformly.read(settings["configuration_path"]["telgram_cfg"])
