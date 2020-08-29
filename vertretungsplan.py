@@ -55,12 +55,10 @@ def main():
 
     stored_vp = utils.get_stored(settings=settings) # Last local stored vertretungplan
 
-    current_vp = open("vp_with_error.html").read()
-
-    # current_vp = poll_plan.get_recent(config=vp_config) # Current vertretungsplan from the website of the FSG
+    current_vp = poll_plan.get_recent(config=vp_config) # Current vertretungsplan from the website of the FSG
 
     updated = check_updated.compare(stored_vp=stored_vp, current_vp=current_vp)
-    updated = True
+
     if updated:
         print("Updated")
 
