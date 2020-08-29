@@ -7,26 +7,6 @@ from bs4 import BeautifulSoup
 from modules import utils
 from modules.convert_prg import convert_header
 
-
-def merge_header_body(header, body, date, to_recive, settings):
-    # header ... converted header
-    # body ... converted body
-    # date ... date from page as beautiful string
-    # to_recive ... the classes which the user will recive
-
-    if not body:
-        if "all" in to_recive:
-            no_vertretung = open(settings["messages"]["no_vertretung"]).readlines()[0].replace("\n", "")
-            no_vertretung = no_vertretung.format(date)
-            return no_vertretung
-        else:
-            no_vertretung = open(settings["messages"]["no_vertretung"]).readlines()[1].replace("\n", "")
-            no_vertretung = no_vertretung.format(date)
-            return no_vertretung
-
-    elif header and body:
-        return header + body
-
 def get_rows(file):
     beautiful_file = BeautifulSoup(file, features="html.parser")
     tables = beautiful_file.findChildren('table', attrs={'class': ['MsoNormalTable']})
@@ -58,7 +38,7 @@ def check_contains(class_list, wclasses):
     return False
 
 def parse_body_row(row = None, replacement_lessons = None, get_vertretungs_classes = False, wclasses = None):
-    data_together = ""
+    line_together = {"text": "", "is_lesson_number": False, "is_vertretungs_data": False}
 
     data = row.findAll('p')
     lesson_number = data[0].text.replace("\xa0", "").replace("\n", "")
@@ -73,9 +53,9 @@ def parse_body_row(row = None, replacement_lessons = None, get_vertretungs_class
         return school_class
 
     if lesson_number in replacement_lessons["reversed_no_vertretung"]:
-        return ""
+        return line_together
     elif lesson_number in replacement_lessons and replacement_lessons[lesson_number] == False:
-        return f"\n{emoji.emojize(':no_entry: Keine Vertretung für die ', use_aliases=True)} {lesson_number}.\n"
+        return f"\n{emoji.emojize(':no_entry: Keine Vertretung für die ', use_aliases=True)} {lesson_number}."
 
     if instead_of_lesson:
         instead_of_lesson = f"statt -> {instead_of_lesson}"
@@ -86,12 +66,16 @@ def parse_body_row(row = None, replacement_lessons = None, get_vertretungs_class
         if school_class:
             class_list = utils.get_validate_classes(school_class)["successful"]
             contains = check_contains(class_list, wclasses)
+
             if contains:
-                data_together = f"\n{lesson_number}:\n  {' | '.join(data_sorted)}\n"
+                line_together["text"] = f"{lesson_number}:\n{' | '.join(data_sorted)}"
+                line_together["is_lesson_number"] = True
+                line_together["is_vertretungs_data"] = True
             else:
-                data_together = f"\n{lesson_number}:\n"
+                line_together["text"] = f"{lesson_number}:"
+                line_together["is_lesson_number"] = True
         else:
-            data_together = f"\n{lesson_number}:\n  {' | '.join(data_sorted)}\n"
+            line_together["text"] = f"{lesson_number}:\n{' | '.join(data_sorted)}"
 
     elif not lesson_number and any(data_sorted):
         if school_class:
@@ -99,14 +83,17 @@ def parse_body_row(row = None, replacement_lessons = None, get_vertretungs_class
             contains = check_contains(class_list, wclasses)
 
             if contains:
-                data_together = f"  {' | '.join(data_sorted)}\n"
+                line_together["text"] = f"{' | '.join(data_sorted)}"
+                line_together["is_vertretungs_data"] = True
         else:
-            data_together = f"  {' | '.join(data_sorted)}\n"
+            line_together["text"] = f"{' | '.join(data_sorted)}"
+            line_together["is_vertretungs_data"] = True
 
     elif lesson_number and not any(data_sorted) and replacement_lessons[lesson_number] == True:
-        data_together = f"\n{lesson_number}:\n"
+        line_together["text"] = f"{lesson_number}:"
+        line_together["is_lesson_number"] = True
 
-    return data_together
+    return line_together
 
 
 def parse_footer_row(row):
@@ -116,10 +103,11 @@ def parse_footer_row(row):
 
     footer_text = utils.remove_spaces(footer_text)
 
-    footer_empty = convert_header.check_if_empty(check_strg=footer_text)
+    footer_empty = convert_header.check_if_empty(check_strg = footer_text)
 
     if footer_empty:
         return None
+
     elif not footer_empty:
         return footer_text
 
@@ -181,19 +169,33 @@ def remove_no_representation(vertretungs_lessons):
     return vertretungs_lessons
 
 def convert_body(rows, wclasses):
-    body_strg = ""
+    lines = []
     replacement_for_lessons = check_replacement_lessons(rows = rows, wclasses = wclasses)
     replacement_for_lessons = remove_no_representation(vertretungs_lessons = replacement_for_lessons)
 
     for row in rows:
         if len(row) == 11:
-            body_strg += parse_body_row(row=row, replacement_lessons=replacement_for_lessons, wclasses=wclasses)
-        elif len(row) == 3:
-            footer = parse_footer_row(row=row)
+            body_line = parse_body_row(row = row, replacement_lessons = replacement_for_lessons, wclasses = wclasses)
+            if body_line["text"]:
+                if not (body_line["is_lesson_number"] and body_line["is_vertretungs_data"]):
+                    lines.append(body_line)
 
-    if body_strg and footer:
-        return body_strg + "\n" + footer
-    elif body_strg:
-        return body_strg
-    else:
-        return body_strg
+                if body_line["is_lesson_number"] and body_line["is_vertretungs_data"]:
+                    # Will be triggered if there is a lesson number in the table and on the same line also
+                    # some vertretungs data
+
+                    splited_lines = body_line["text"].split("\n")
+
+                    if len(splited_lines) == 2:
+                        lines.append({"text": splited_lines[0], "is_lesson_number": True, "is_vertretungs_data": False})
+                        lines.append({"text": splited_lines[1], "is_lesson_number": False, "is_vertretungs_data": True})
+                    else:
+                        # Should never occur
+                        lines.append(body_line["text"])
+
+        elif len(row) == 3:
+            footer_row = parse_footer_row(row=row)
+            if footer_row:
+                lines.append(footer_row)
+
+    return lines

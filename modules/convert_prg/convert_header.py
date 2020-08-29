@@ -70,7 +70,10 @@ def parse_header(rows, wclasses):
         7: "Sonntag",
     }
 
-    header_date = f"{day_relation[int(date.format('d'))]}, {date.day}.{date.month}.{date.year}"
+    try:
+        header_date = f"{day_relation[int(date.format('d'))]}, {date.day}.{date.month}.{date.year}"
+    except:
+        import IPython;IPython.embed();import sys;sys.exit()
     header_text = f"Vertretungsplan für: {header_date} {emoji.emojize(':soap: :palms_up_together:', use_aliases = True)}"
 
     classes_text = header_row[1].find('span').text.replace("\n", "").replace("\xa0", "")
@@ -125,7 +128,7 @@ def parse_header(rows, wclasses):
                 vertretung_classes = sort_class_names(vertretung_classes)
                 vertretung_classes = emoji.emojize(f":collision: Vertretung für: {', '.join(vertretung_classes)}")
             elif all_included:
-                vertretung_classes = emoji.emojize(f"\n  :exclamation_mark: Vertretung für alle Klassen :face_with_open_mouth:")
+                vertretung_classes = emoji.emojize(f"\n:exclamation_mark: Vertretung für alle Klassen :face_with_open_mouth:")
 
     if header_text:
         header_strg += header_text + '\n'
