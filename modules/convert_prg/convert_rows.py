@@ -55,7 +55,7 @@ def parse_body_row(row = None, replacement_lessons = None, get_vertretungs_class
     if lesson_number in replacement_lessons["reversed_no_vertretung"]:
         return line_together
     elif lesson_number in replacement_lessons and replacement_lessons[lesson_number] == False:
-        return f"\n{emoji.emojize(':no_entry: Keine Vertretung für die ', use_aliases=True)} {lesson_number}."
+        return {"text": f"\n{emoji.emojize(':no_entry: Keine Vertretung für die ', use_aliases=True)} {lesson_number}.", "is_lesson_number": False, "is_vertretungs_data": True}
 
     if instead_of_lesson:
         instead_of_lesson = f"statt -> {instead_of_lesson}"
@@ -189,13 +189,11 @@ def convert_body(rows, wclasses):
                     if len(splited_lines) == 2:
                         lines.append({"text": splited_lines[0], "is_lesson_number": True, "is_vertretungs_data": False})
                         lines.append({"text": splited_lines[1], "is_lesson_number": False, "is_vertretungs_data": True})
-                    else:
-                        # Should never occur
-                        lines.append(body_line["text"])
+
 
         elif len(row) == 3:
             footer_row = parse_footer_row(row=row)
             if footer_row:
-                lines.append(footer_row)
+                lines.append({"text": footer_row, "is_lesson_number": False, "is_vertretungs_data": False})
 
     return lines

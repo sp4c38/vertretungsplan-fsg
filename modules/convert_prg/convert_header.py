@@ -126,7 +126,7 @@ def parse_header(rows, wclasses):
         if vertretung_classes:
             if not all_included:
                 vertretung_classes = sort_class_names(vertretung_classes)
-                vertretung_classes = emoji.emojize(f":collision: Vertretung für: {', '.join(vertretung_classes)}")
+                vertretung_classes = emoji.emojize(f"\n:collision: Vertretung für: {', '.join(vertretung_classes)}")
             elif all_included:
                 vertretung_classes = emoji.emojize(f"\n:exclamation_mark: Vertretung für alle Klassen :face_with_open_mouth:")
 

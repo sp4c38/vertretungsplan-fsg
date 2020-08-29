@@ -17,7 +17,6 @@ def to_text(header, body, date, to_recive, settings):
 
     elif header and body:
         merge_result += header
-
         for line in body:
             if line["is_lesson_number"] and not line["is_vertretungs_data"]:
                 merge_result += "\n"
@@ -25,6 +24,11 @@ def to_text(header, body, date, to_recive, settings):
 
             elif line["is_vertretungs_data"] and not line["is_lesson_number"]:
                 merge_result += f"  {line['text']}"
+
+            elif not line["is_vertretungs_data"] and not line["is_lesson_number"]:
+                # Must be footer row
+                merge_result += "\n"
+                merge_result += line["text"]
 
             merge_result += "\n"
 
