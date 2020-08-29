@@ -10,10 +10,34 @@ import sys
 from modules.convert_prg import convert_rows
 
 def get_level_letter(string):
-    # Uses re to get the level and the letter from a given string
-    regex = re.findall("(?P<level>1[0-2]|[1-9])[^a-z]*(?P<letter>[a-z]*)", string)
+    # Use regex to get the class level and the class letter and return it as a tuple
+    # For example 5d will be converted to [("5", "d")]
 
-    return regex
+    #                                                                      This part is optional (only if range like 5-12 level)
+    #                                                                      |-----------------------------------------------------|
+    regex = re.findall("(?P<level>1[0-2]|[1-9])[^-a-z]*(?P<letter>[a-z])*-*(?P<levelTwo>1[0-2]|[1-9])*[^a-z]*(?P<letterTwo>[a-z])*", string)
+    all_classes_have_vertretung = False
+
+    return_level_letter = []
+
+    for match in regex:
+        # Normally will only have one iteration
+        if len(match) == 4:
+            # import IPython;IPython.embed();import sys;sys.exit()
+            if not match[2] and not match[3]:
+                return_level_letter.append((match[0], match[1]))
+            elif match[0] and match[2]:
+                if not match[1] and not match[3]:
+                    if (int(match[0]) - int(match[2])) == -7:
+                        # Exact range 5-12
+                        # All classes have vertretung
+                        all_classes_have_vertretung = True
+
+                    for level in range(int(match[0]), int(match[2]) + 1, 1): # regex makes sure that this doesn't result into errors
+                        for letter in ["a", "b", "c", "d"]:
+                            return_level_letter.append((str(level), letter))
+
+    return all_classes_have_vertretung, return_level_letter
 
 def get_stored(settings):
     # Gets the most recent stored vertretungsplan file and return the path to it, if none is found None is returned
@@ -80,8 +104,6 @@ def backup_vertretungsplan(settings, to_save):
     return
 
 def remove_spaces(string):
-    # The teacher_text looks mostly like this: Fehlende Lehrer  :  ST;LE; STF // too many
-    # of those spaces. This trys to remove them:
     start_char = string.lower().find(':')
     while string[start_char-1] == ' ':
         string = "".join([
@@ -106,48 +128,66 @@ def remove_spaces(string):
 
 def get_validate_classes(message):
     # Get the different classes of the message and validate them
-    # Returns the successful validated classes and the unsuccessful validated classes as a dictionary
+    # Returns the successful validated classes and the unsuccessful validated classes
 
-    # Allowed types of sending classes in setup mode:
-    # - 06d (to 6d), 006d, 0006d... or 010d (to 10d), 0010d
-    # - 6d
+    # Example validations:
+    # - 6d, 06d, 006d, 0006d converted to 6d
     # - 6abcd or 6abcdd is translated to 6abcd (no duplicated letters)
     # - 6 is translated to 6a,6b,6c,6d
     # - 6amdcpdbq is translated to 6adcb
 
+    # Returned is a dictionary with {"successful": [], "unsuccessful": []}
+    # Whereby successful includes all successfully validated single classes
+    # So 6abcdpd would be {"successful": [6a,6b,6c,6d], "unsuccessful": [6p]}
+
     splited_msg = message.split(",")
-    validation_classes = {"successful": [], "unsuccessful": []}
+    validation_classes = {"are_all": False, "successful": [], "unsuccessful": []} # are_all is set to True if all classes of the whole school are in "successful"
+
+    are_all = False
+    made_mistake = False # Set to True if any classes are added to unsuccessful
+                         # Needed to set are_all in validation_classes to True if made_mistake stays False
 
     for msg in splited_msg:
         if msg:
-            regex = get_level_letter(msg)
+            are_all, level_letter = get_level_letter(msg)
 
-            if not regex:
+            if not level_letter:
                 validation_classes["unsuccessful"].append(msg)
             else:
-                for match in regex:
+                for match in level_letter:
                     level = match[0]
-                    letters = list(set(match[1])) # Sort out duplicated letters and put all in a list
 
-                    if level and len(letters) == 1:
-                        if letters[0] in ["a", "b", "c", "d"]:
-                            joined_class = "".join([level, letters[0]])
-                            validation_classes["successful"].append(joined_class)
-                        else:
-                            validation_classes["unsuccessful"].append(msg)
-                    elif level and len(letters) > 1:
-                        for l in letters:
-                            if l in ["a", "b", "c", "d"]:
-                                joined_class = "".join([level, l])
+                    if not level in ["5", "6", "7", "8", "9", "10", "11", "12"]: # Don't convert level to integer, could lead to errors
+                        # Only classes from 5th grade on exist
+                        validation_classes["unsuccessful"].append(msg)
+                        continue
+
+                    letters = list(set(match[1])) # Sort out duplicated class letters with set
+
+                    if level and letters:
+                        for letter in letters:
+                            if letter in ["a", "b", "c", "d"]:
+                                joined_class = "".join([level, letter])
                                 validation_classes["successful"].append(joined_class)
                             else:
-                                joined_class = "".join([level, l])
+                                joined_class = "".join([level, letter])
                                 validation_classes["unsuccessful"].append(joined_class)
                     elif level and not letters:
-                        for l in ["a", "b", "c", "d"]:
-                            joined_class = "".join([level, l])
+                        for letter in ["a", "b", "c", "d"]:
+                            joined_class = "".join([level, letter])
                             validation_classes["successful"].append(joined_class)
                     elif not level:
                         validation_classes["unsuccessful"].append(msg)
+                        continue
+
+    if are_all == True and made_mistake == False:
+        validation_classes["are_all"] = True
+
+    # Remove duplicates out of successful and unsuccessful list
+    if validation_classes["successful"]:
+        validation_classes["successful"] = list(set(validation_classes["successful"]))
+
+    if validation_classes["unsuccessful"]:
+        validation_classes["unsuccessful"] = list(set(validation_classes["unsuccessful"]))
 
     return validation_classes

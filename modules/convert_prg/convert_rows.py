@@ -57,7 +57,7 @@ def check_contains(class_list, wclasses):
 
     return False
 
-def parse_body_row(row=None, replacement_lessons=None, get_vertretungs_classes=False, wclasses=None):
+def parse_body_row(row = None, replacement_lessons = None, get_vertretungs_classes = False, wclasses = None):
     data_together = ""
 
     data = row.findAll('p')
@@ -68,18 +68,17 @@ def parse_body_row(row=None, replacement_lessons=None, get_vertretungs_classes=F
     instead_of_lesson = data[4].text.replace("\xa0", "").replace("\n", "")
 
     if get_vertretungs_classes == True:
-        # If get_vertretungs_classes is True the programm will only return the school classes which have vertreung
+        # If get_vertretungs_classes is True this function will only return the school classes which have vertreung
         # it could be that duplicates occur. This is used by convert_header
         return school_class
 
     if lesson_number in replacement_lessons["reversed_no_vertretung"]:
         return ""
     elif lesson_number in replacement_lessons and replacement_lessons[lesson_number] == False:
-        return f"\n{emoji.emojize(':cross_mark: Keine Vertretung für die ', use_aliases=True)} {lesson_number}.\n"
+        return f"\n{emoji.emojize(':no_entry: Keine Vertretung für die ', use_aliases=True)} {lesson_number}.\n"
 
     if instead_of_lesson:
         instead_of_lesson = f"statt -> {instead_of_lesson}"
-
 
     data_sorted = [y for y in [school_class, would_have_hour, replacement, instead_of_lesson] if y] # Sort out items which are empty | with lesson_number
 
@@ -88,20 +87,21 @@ def parse_body_row(row=None, replacement_lessons=None, get_vertretungs_classes=F
             class_list = utils.get_validate_classes(school_class)["successful"]
             contains = check_contains(class_list, wclasses)
             if contains:
-                data_together = f"\n{lesson_number}:\n {' | '.join(data_sorted)}\n"
+                data_together = f"\n{lesson_number}:\n  {' | '.join(data_sorted)}\n"
             else:
                 data_together = f"\n{lesson_number}:\n"
         else:
-            data_together = f"\n{lesson_number}:\n {' | '.join(data_sorted)}\n"
+            data_together = f"\n{lesson_number}:\n  {' | '.join(data_sorted)}\n"
 
     elif not lesson_number and any(data_sorted):
         if school_class:
             class_list = utils.get_validate_classes(school_class)["successful"]
             contains = check_contains(class_list, wclasses)
+
             if contains:
-                data_together = f" {' | '.join(data_sorted)}\n"
+                data_together = f"  {' | '.join(data_sorted)}\n"
         else:
-            data_together = f" {' | '.join(data_sorted)}\n"
+            data_together = f"  {' | '.join(data_sorted)}\n"
 
     elif lesson_number and not any(data_sorted) and replacement_lessons[lesson_number] == True:
         data_together = f"\n{lesson_number}:\n"
@@ -141,7 +141,10 @@ def check_replacement_lessons(rows, wclasses):
             replacement = data[3].text.replace("\xa0", "").replace("\n", "")
             instead_of_lesson = data[4].text.replace("\xa0", "").replace("\n", "")
 
-            class_list = utils.get_validate_classes(school_class)["successful"]
+            if school_class:
+                class_list = utils.get_validate_classes(school_class)["successful"]
+            else:
+                class_list = []
 
             if lesson_number:
                 current_lesson = lesson_number
@@ -151,10 +154,11 @@ def check_replacement_lessons(rows, wclasses):
                 repl_lessons[current_lesson] = True
             else:
                 if class_list and any([would_have_hour, replacement, instead_of_lesson]):
-                    for c in wclasses:
-                        if c in class_list:
+                    for wanted_class in wclasses:
+                        if wanted_class in class_list:
                             repl_lessons[current_lesson] = True
                             continue
+
                 elif not class_list and any([would_have_hour, replacement, instead_of_lesson]):
                     repl_lessons[current_lesson] = True
 
@@ -176,10 +180,10 @@ def remove_no_representation(vertretungs_lessons):
 
     return vertretungs_lessons
 
-def convert_body_footer(rows, wclasses):
+def convert_body(rows, wclasses):
     body_strg = ""
-    replacement_for_lessons = check_replacement_lessons(rows=rows, wclasses=wclasses)
-    replacement_for_lessons = remove_no_representation(vertretungs_lessons=replacement_for_lessons)
+    replacement_for_lessons = check_replacement_lessons(rows = rows, wclasses = wclasses)
+    replacement_for_lessons = remove_no_representation(vertretungs_lessons = replacement_for_lessons)
 
     for row in rows:
         if len(row) == 11:

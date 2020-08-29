@@ -60,7 +60,6 @@ def parse_header(rows, wclasses):
     date_text = date_row.text.replace('\n', '')
 
     date = utils.get_date_from_page(date_text)
-
     day_relation = {
         1: "Montag",
         2: "Dienstag",
@@ -72,12 +71,12 @@ def parse_header(rows, wclasses):
     }
 
     header_date = f"{day_relation[int(date.format('d'))]}, {date.day}.{date.month}.{date.year}"
-    header_text = f"Vertretungsplan für: {header_date} {emoji.emojize(':face_with_medical_mask:', use_aliases=True )}"
+    header_text = f"Vertretungsplan für: {header_date} {emoji.emojize(':soap: :palms_up_together:', use_aliases = True)}"
 
     classes_text = header_row[1].find('span').text.replace("\n", "").replace("\xa0", "")
 
-    # The classes_text could look like this: Fehlende Klassen  :  5b // too many
-    # of those spaces. This trys to remove them.
+    # Text with classes could contain extra spaces like this: Fehlende Klassen  :  5b // too many
+    # Remove them:
     classes_text = utils.remove_spaces(classes_text)
 
     classes_text_empty = check_if_empty(classes_text)
@@ -91,8 +90,8 @@ def parse_header(rows, wclasses):
     teachers_replace = " ".join(str(i).replace('\n', '').replace('<i> </i>', '').replace('\xa0', '').replace('<i></i>', '')
                         for i in teachers_text.contents)
 
-    # The teacher_text looks mostly like this: Fehlende Lehrer  :  ST;LE; STF // too many
-    # of those spaces. This trys to remove them.
+    # Text with missing teachers could contain extra spaces like this: Fehlende Lehrer  :  ST;LE; STF
+    # Remove them:
     teachers_replace = utils.remove_spaces(teachers_replace)
 
     teachers_replace_empty = check_if_empty(teachers_replace)
@@ -101,24 +100,32 @@ def parse_header(rows, wclasses):
     elif not teachers_replace_empty:
         header_teachers = teachers_replace
 
-    represen_classes_unvalidated = [] # classes not validated
-    represen_classes = [] # classes validated
-    if "all" in wclasses:
+    vertretung_classes_unvalidated = [] # classes not validated
+    vertretung_classes = [] # classes validated
+
+    if "all" in wclasses: # Only include a "Vertretung für" header when sending messages to groups
         for row in rows:
             if len(row) == 11:
-                school_class = convert_rows.parse_body_row(row=row, get_vertretungs_classes=True)
+                school_class = convert_rows.parse_body_row(row = row, get_vertretungs_classes = True)
 
                 if school_class:
-                    represen_classes_unvalidated.append(school_class)
+                    vertretung_classes_unvalidated.append(school_class)
 
-        for x in represen_classes_unvalidated:
-            y = utils.get_validate_classes(x) # Validate classes
-            for z in y["successful"]:
-                represen_classes.append(z)
+        all_included = False
+        for unvalidated_vertretungs_class in vertretung_classes_unvalidated:
+            y = utils.get_validate_classes(unvalidated_vertretungs_class) # Validate classes
+            if y["are_all"] == True:
+                all_included = True
+            for successful_class in y["successful"]:
+                vertretung_classes.append(successful_class)
 
-        if represen_classes:
-            represen_classes = sort_class_names(represen_classes)
-            represen_classes = f"Vertretung für: {', '.join(represen_classes)}"
+
+        if vertretung_classes:
+            if not all_included:
+                vertretung_classes = sort_class_names(vertretung_classes)
+                vertretung_classes = emoji.emojize(f":collision: Vertretung für: {', '.join(vertretung_classes)}")
+            elif all_included:
+                vertretung_classes = emoji.emojize(f"\n  :exclamation_mark: Vertretung für alle Klassen :face_with_open_mouth:")
 
     if header_text:
         header_strg += header_text + '\n'
@@ -126,8 +133,8 @@ def parse_header(rows, wclasses):
         header_strg += header_classes + '\n'
     if header_teachers:
         header_strg += header_teachers + '\n'
-    if represen_classes:
-        header_strg += represen_classes + '\n'
+    if vertretung_classes:
+        header_strg += vertretung_classes + '\n'
 
 
     header_strg += "\nKlasse | Fach | Vertretung durch: (Fach) | statt\n"

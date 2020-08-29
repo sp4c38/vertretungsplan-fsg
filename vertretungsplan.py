@@ -72,7 +72,7 @@ def main():
             # wclasses: wanted classes
             if rcpt == "all":
                 header, date = convert_header.parse_header(rows = rows, wclasses = ["all"]) # Get back the header and the date from the page
-                body = convert_rows.convert_body_footer(rows = rows, wclasses = ["all"]) # Convert the body and the footer
+                body = convert_rows.convert_body(rows = rows, wclasses = ["all"]) # Convert the body and the footer
 
                 # Merge the header and the body
                 # If the body is empty a message will be inserted for the body which tells the user that there is not vertretung
@@ -83,7 +83,7 @@ def main():
                                       chat_id_list = recipients[rcpt], message = output)
             else:
                 header, date = convert_header.parse_header(rows = rows, wclasses = recipients[rcpt]) # Get back the header and the date from the page
-                body = convert_rows.convert_body_footer(rows = rows, wclasses = recipients[rcpt]) # Convert the body and the footer
+                body = convert_rows.convert_body(rows = rows, wclasses = recipients[rcpt]) # Convert the body and the footer
 
                 # Merge the header and the body
                 # If the body is empty a message will be inserted for the body which tells the user that there is not vertretung
@@ -98,14 +98,14 @@ def main():
 
 if __name__ == '__main__':
     try:
-        print(f"Session started {arrow.utcnow().format()}.\n")
+        print(f"Session started {arrow.utcnow().format()} UTC.\n")
         main()
-        print(f"\nSession ended {arrow.utcnow().format()}.")
+        print(f"\nSession ended {arrow.utcnow().format()} UTC.")
 
     except requests.exceptions.ConnectionError:
         print("Problems connecting to the internet.")
-        print(f"\nSession ended {arrow.utcnow().format()}.")
+        print(f"\nSession ended {arrow.utcnow().format()} UTC.")
 
     except Exception as exception:
         traceback.print_exc()
-        print(f"\nSession ended {arrow.utcnow().format()}.")
+        print(f"\nSession ended {arrow.utcnow().format()} UTC.")
