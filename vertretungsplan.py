@@ -87,9 +87,6 @@ def main():
 
             print(f"Sending message to {recipients['all']}.")
             telegram.send_message(config = telegram_config, telegram_api = telegram_api,
-                                  chat_id_list = recipients["all"], message = "- - - - - - - - - - - - - - - -")
-
-            telegram.send_message(config = telegram_config, telegram_api = telegram_api,
                                   chat_id_list = recipients["all"], message = output)
 
         for rcpt in recipients["own_selection"]:
@@ -105,10 +102,6 @@ def main():
                 output = merge_lines.to_text(header, body, date, wclasses, settings)
 
                 print(f"Sending message to {rcpt}.")
-                telegram.send_message(config = telegram_config, telegram_api = telegram_api,
-                                      chat_id_list = [chat_id], message = "- - - - - - - - - - - - - - - -")
-                                                                            # Divider to divide between multiple messages
-                                                                            # For a better overview
                 telegram.send_message(config = telegram_config, telegram_api = telegram_api,
                                       chat_id_list = [chat_id], message = output)
     else:

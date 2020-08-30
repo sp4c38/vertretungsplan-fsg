@@ -29,9 +29,9 @@ def compare(stored_vp, current_vp):
 
     # Uses CEST timezone (Central European Summer Time)
 
-    cest = arrow.utcnow().to("CEST")
-    today = arrow.get(datetime.date(cest.year, cest.month, cest.day)) # Will only contain year, month and day. Not hour, minute, seconds,...
-                                                                      # So will be today at midnight
+    cet = arrow.utcnow().to("CET")
+    today = arrow.get(datetime.date(cet.year, cet.month, cet.day)) # Will only contain year, month and day. Not hour, minute, seconds,...
+                                                                   # So will be today at midnight
 
     if stored_vp:
         crt_vp_date_text = convert_rows.get_rows(file=current_vp)[0].findAll("p")[0].text
@@ -58,7 +58,7 @@ def compare(stored_vp, current_vp):
 
     else:
         # If there is no stored_vp than only check if crt_vp_date is later than today at midnight
-        crt_vp_date_text = convert_rows.get_rows(file=crt_vp)[0].findAll("p")[0].text
+        crt_vp_date_text = convert_rows.get_rows(file = current_vp)[0].findAll("p")[0].text
         try:
             crt_vp_date = get_date_from_page(crt_vp_date_text)
         except:
