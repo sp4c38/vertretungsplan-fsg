@@ -1,4 +1,4 @@
-# Vertretungsplan-FSG
+# Vertretungsplan FSG
 
 Vertretungsplan-FSG is a python project which displays the Vertretungsplan from my school in a for students accessiable place: A Messenger. It also makes to whole process alot easier.
 
