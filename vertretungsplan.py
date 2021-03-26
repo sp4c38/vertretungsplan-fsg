@@ -8,7 +8,7 @@ import requests
 import traceback
 
 from modules import check_updated
-from modules import  poll_plan
+from modules import poll_plan
 from modules import telegram
 from modules import utils
 

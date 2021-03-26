@@ -32,7 +32,7 @@ def compare(stored_vp, current_vp):
     cet = arrow.utcnow().to("CET")
     today = arrow.get(datetime.date(cet.year, cet.month, cet.day)) # Will only contain year, month and day. Not hour, minute, seconds,...
                                                                    # So will be today at midnight
-
+                                                                   
     if stored_vp:
         crt_vp_date_text = convert_rows.get_rows(file=current_vp)[0].findAll("p")[0].text
         srd_vp_date_text = convert_rows.get_rows(file=stored_vp)[0].findAll("p")[0].text
@@ -64,7 +64,7 @@ def compare(stored_vp, current_vp):
         except:
             return True
 
-        if crt_vp_date > today:
+        if crt_vp_date >= today:
             return True
         else:
             return False

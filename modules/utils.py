@@ -44,7 +44,7 @@ def get_stored(settings):
 
     config = configparser.ConfigParser()
     config.read(settings["recent_info"])
-
+    
     if config["recent_stored"]["recent_stored_vertretungsplan"]:
         try:
             return open(config["recent_stored"]["recent_stored_vertretungsplan"]).read()

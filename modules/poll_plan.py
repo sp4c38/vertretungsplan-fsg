@@ -12,9 +12,14 @@ import sys
 from modules import utils
 
 def download_page(url, config):
-    # download the page (authenticate with username and password from vp_conf)
-    return requests.get(url=url, auth=(config["user"], config["password"])).text
-
+    # Download the page by authenticating to the server.
+    page_raw = requests.get(url=url, auth=(config["user"], config["password"]))
+    # The downloaded page includes \r\n newline characters as the table on the site was probably generated
+    # with some Windows tool like Excel. For standard newline characters on Unix systems, following converts
+    # them to the proper \n newline symbol.
+    page_bad_newline = page_raw.text
+    page = page_bad_newline.replace("\r\n", "\n")
+    return page
 
 def get_weekday():
     # Gets todays weekday (timezone used: MET)
