@@ -9,7 +9,7 @@ def main(update, user, tele_config, tele_config_uniformly, settings):
     if user["delete_mode"] == True:
         if update["message"]["text"] == "Ja":
             print("User wants to delete his classes.")
-            classes_before = user["classes"] # The classes before the deletion
+            classes_before = user["classes"]  # The classes before the deletion
 
             user["delete_mode"] = False
             print(f"Delete mode was disabled for {user['user_id']}")
@@ -19,7 +19,9 @@ def main(update, user, tele_config, tele_config_uniformly, settings):
             successfully_deleted = open(settings["messages"]["delete_mode_successful"]).readlines()[0]
 
             keyboardmarkup = json.load(open(settings["messages"]["main_keyboardmarkup"]))
-            telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, successfully_deleted, keyboardmarkup)
+            telegram.send_msg_keyboard_markup(
+                tele_config, tele_config_uniformly, chat_id_list, successfully_deleted, keyboardmarkup
+            )
             print("Sent deletion successful message and reactivated the main keyboard markup.")
             return
         else:
@@ -30,7 +32,9 @@ def main(update, user, tele_config, tele_config_uniformly, settings):
             not_deleted = open(settings["messages"]["delete_mode_unsuccessful"]).readlines()[0]
 
             keyboardmarkup = json.load(open(settings["messages"]["main_keyboardmarkup"]))
-            telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, not_deleted, keyboardmarkup)
+            telegram.send_msg_keyboard_markup(
+                tele_config, tele_config_uniformly, chat_id_list, not_deleted, keyboardmarkup
+            )
             print("Sent deletion unsuccessful message and reactivated the main keyboard markup.")
             return
 
@@ -44,7 +48,9 @@ def main(update, user, tele_config, tele_config_uniformly, settings):
 
             keyboardmarkup = json.load(open(settings["messages"]["delete_keyboard_markup"]))
 
-            telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, delete_text, keyboardmarkup)
+            telegram.send_msg_keyboard_markup(
+                tele_config, tele_config_uniformly, chat_id_list, delete_text, keyboardmarkup
+            )
             print("Sent delete validation message.")
             return
 

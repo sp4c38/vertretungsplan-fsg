@@ -1,6 +1,7 @@
 import json
 import requests
 
+
 def send_message(config, telegram_api, chat_id_list, message):
     # config contains general telegram bot api like getUpdates link or sendMessage (they don't include the bot token)
     # contains bot data and the group chat id's
@@ -16,6 +17,7 @@ def send_message(config, telegram_api, chat_id_list, message):
         requests.post(url=url, data=data)
 
     return True
+
 
 def send_msg_keyboard_markup(config, telegram_api, chat_id_list, message, keyboardmarkup):
     # Send a normal message
@@ -33,7 +35,7 @@ def send_msg_keyboard_markup(config, telegram_api, chat_id_list, message, keyboa
         if keyboardmarkup:
             data["reply_markup"] = json.dumps(keyboardmarkup)
         elif not keyboardmarkup:
-            data["reply_markup"] = json.dumps({"remove_keyboard":True})
+            data["reply_markup"] = json.dumps({"remove_keyboard": True})
 
         requests.post(url, data)
 

@@ -10,13 +10,13 @@ def check_exists(user_data, update):
         return user_data["users"][user_id]
     elif not user_id in user_data["users"]:
         print("Yayy a new user is with us.")
-        user_data["users"][user_id] = {"user_id": user_id, # Store it again to make processing easier.
-                                       "chat_id": chat_id,
-                                       "setup_mode": False,
-                                       "delete_mode": False,
-                                       "is_bot": update["message"]["from"]["is_bot"],
-                                       "classes": [],
-                                      }
+        user_data["users"][user_id] = {
+            "user_id": user_id,  # Store it again to make processing easier.
+            "chat_id": chat_id,
+            "setup_mode": False,
+            "delete_mode": False,
+            "is_bot": update["message"]["from"]["is_bot"],
+            "classes": [],
+        }
 
         return user_data["users"][user_id]
-

@@ -1,5 +1,6 @@
 from modules import telegram
 
+
 def main(update, user, tele_config, tele_config_uniformly, settings):
     if not user["classes"]:
         classes_vertretung = "Keine"

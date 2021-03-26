@@ -16,23 +16,26 @@ from bs4 import BeautifulSoup
 from modules.convert_prg import convert_rows
 from modules.utils import get_date_from_page
 
+
 def compare(stored_vp, current_vp):
     """
-        First checks if the date from the recent vp is more back than from the stored vp. If so the
-        recent vp is older than the stored vp, so no new one is found (nothing updated). False is returned.
+    First checks if the date from the recent vp is more back than from the stored vp. If so the
+    recent vp is older than the stored vp, so no new one is found (nothing updated). False is returned.
 
-        Uses sha256 algo to create a hash for the stored vertretungsplan and for the
-        recent vertretungsplan, than compares them
+    Uses sha256 algo to create a hash for the stored vertretungsplan and for the
+    recent vertretungsplan, than compares them
 
-        Returns True if the files diff and False if they are the same
+    Returns True if the files diff and False if they are the same
     """
 
     # Uses CEST timezone (Central European Summer Time)
 
     cet = arrow.utcnow().to("CET")
-    today = arrow.get(datetime.date(cet.year, cet.month, cet.day)) # Will only contain year, month and day. Not hour, minute, seconds,...
-                                                                   # So will be today at midnight
-                                                                   
+    today = arrow.get(
+        datetime.date(cet.year, cet.month, cet.day)
+    )  # Will only contain year, month and day. Not hour, minute, seconds,...
+    # So will be today at midnight
+
     if stored_vp:
         crt_vp_date_text = convert_rows.get_rows(file=current_vp)[0].findAll("p")[0].text
         srd_vp_date_text = convert_rows.get_rows(file=stored_vp)[0].findAll("p")[0].text
@@ -44,8 +47,7 @@ def compare(stored_vp, current_vp):
             return True
 
         if not (crt_vp_date >= srd_vp_date and crt_vp_date > today):
-            print(f"Website-time {crt_vp_date}, stored-file-time: {srd_vp_date}, "\
-                  f"but today is {today}.")
+            print(f"Website-time {crt_vp_date}, stored-file-time: {srd_vp_date}, " f"but today is {today}.")
             return False
 
         crt_vp_hash = hashlib.sha256(current_vp.encode("UTF-8")).hexdigest()
@@ -58,7 +60,7 @@ def compare(stored_vp, current_vp):
 
     else:
         # If there is no stored_vp than only check if crt_vp_date is later than today at midnight
-        crt_vp_date_text = convert_rows.get_rows(file = current_vp)[0].findAll("p")[0].text
+        crt_vp_date_text = convert_rows.get_rows(file=current_vp)[0].findAll("p")[0].text
         try:
             crt_vp_date = get_date_from_page(crt_vp_date_text)
         except:

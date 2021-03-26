@@ -53,21 +53,20 @@ def main():
     for group in telegram_config["group_chat_ids"].split(","):
         recipients["all"].append(group)
 
-    stored_vp = utils.get_stored(settings=settings) # Last local stored vertretungplan
+    stored_vp = utils.get_stored(settings=settings)  # Last local stored vertretungplan
 
-    current_vp = poll_plan.get_recent(config=vp_config) # Current vertretungsplan from the website of the FSG
+    current_vp = poll_plan.get_recent(config=vp_config)  # Current vertretungsplan from the website of the FSG
 
     updated = check_updated.compare(stored_vp=stored_vp, current_vp=current_vp)
 
     if updated:
         print("Updated")
 
-        utils.backup_vertretungsplan(settings=settings, to_save=current_vp) # Save the vertretungsplan to backups
+        utils.backup_vertretungsplan(settings=settings, to_save=current_vp)  # Save the vertretungsplan to backups
         # Find table and rows in that table
 
         print("Converting...")
         rows = convert_rows.get_rows(file=current_vp)
-
 
         # Remove line: Klasse | Fach...
         # Is added hard-coded later
@@ -76,39 +75,47 @@ def main():
         if recipients["all"]:
             # Just needs to be converted once because all recipients which will get all classes get all the same message
             # wclasses: wanted classes
-            header, date = convert_header.parse_header(rows = rows, wclasses = ["all"]) # Get back the header and the date from the page
-            temp_rows = rows[1:] # Remove the header row and only use this list temporary because can't pop first item because would
-                                 # result into errors when using pop again for converting lines in own_selection
-            body = convert_rows.convert_body(rows = temp_rows, wclasses = ["all"]) # Convert the body and the footer
+            header, date = convert_header.parse_header(
+                rows=rows, wclasses=["all"]
+            )  # Get back the header and the date from the page
+            temp_rows = rows[
+                1:
+            ]  # Remove the header row and only use this list temporary because can't pop first item because would
+            # result into errors when using pop again for converting lines in own_selection
+            body = convert_rows.convert_body(rows=temp_rows, wclasses=["all"])  # Convert the body and the footer
 
             # Merge the header and the body
             # If the body is empty a message will be inserted for the body which tells the user that there is not vertretung
             output = merge_lines.to_text(header, body, date, ["all"], settings)
 
             print(f"Sending message to {recipients['all']}.")
-            telegram.send_message(config = telegram_config, telegram_api = telegram_api,
-                                  chat_id_list = recipients["all"], message = output)
+            telegram.send_message(
+                config=telegram_config, telegram_api=telegram_api, chat_id_list=recipients["all"], message=output
+            )
 
         for rcpt in recipients["own_selection"]:
-                chat_id = list(rcpt.keys())[0]
-                wclasses = rcpt[chat_id]
+            chat_id = list(rcpt.keys())[0]
+            wclasses = rcpt[chat_id]
 
-                header, date = convert_header.parse_header(rows = rows, wclasses = wclasses) # Get back the header and the date from the page
-                temp_rows = rows[1:]
-                body = convert_rows.convert_body(rows = temp_rows, wclasses = wclasses) # Convert the body and the footer
+            header, date = convert_header.parse_header(
+                rows=rows, wclasses=wclasses
+            )  # Get back the header and the date from the page
+            temp_rows = rows[1:]
+            body = convert_rows.convert_body(rows=temp_rows, wclasses=wclasses)  # Convert the body and the footer
 
-                # Merge the header and the body
-                # If the body is empty a message will be inserted for the body which tells the user that there is not vertretung
-                output = merge_lines.to_text(header, body, date, wclasses, settings)
+            # Merge the header and the body
+            # If the body is empty a message will be inserted for the body which tells the user that there is not vertretung
+            output = merge_lines.to_text(header, body, date, wclasses, settings)
 
-                print(f"Sending message to {rcpt}.")
-                telegram.send_message(config = telegram_config, telegram_api = telegram_api,
-                                      chat_id_list = [chat_id], message = output)
+            print(f"Sending message to {rcpt}.")
+            telegram.send_message(
+                config=telegram_config, telegram_api=telegram_api, chat_id_list=[chat_id], message=output
+            )
     else:
         print("Not updated")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         print(f"Session started {arrow.utcnow().format()} UTC.\n")
         main()

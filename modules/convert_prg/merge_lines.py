@@ -1,5 +1,6 @@
 # Merges the header and the body to certain formats
 
+
 def to_text(header, body, date, to_recive, settings):
     # header ... converted header
     # body ... converted body

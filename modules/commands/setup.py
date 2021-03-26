@@ -8,19 +8,19 @@ def main(update, user, tele_config, tele_config_uniformly, settings):
     chat_id_list = [user["chat_id"]]
 
     if user["setup_mode"] == True:
-        validation_classes =  utils.get_validate_classes(update["message"]["text"])
+        validation_classes = utils.get_validate_classes(update["message"]["text"])
         successful_string = ", ".join(validation_classes["successful"])
         unsuccessful_string = ", ".join(validation_classes["unsuccessful"])
 
         if len(validation_classes["successful"]) > 0:
-            if len(validation_classes["successful"]) == 1: # Check for singular or plural
+            if len(validation_classes["successful"]) == 1:  # Check for singular or plural
                 correct_msg = open(settings["messages"]["validation_successful"]).readlines()[0]
             elif len(validation_classes["successful"]) > 1:
                 correct_msg = open(settings["messages"]["validation_successful"]).readlines()[1]
 
             correct_msg = correct_msg.format(successful_string)
 
-            for c in validation_classes["successful"]: # Add successfully detected classes to user
+            for c in validation_classes["successful"]:  # Add successfully detected classes to user
                 if not c in user["classes"]:
                     user["classes"].append(c)
 
@@ -29,13 +29,17 @@ def main(update, user, tele_config, tele_config_uniformly, settings):
             telegram.send_message(tele_config, tele_config_uniformly, chat_id_list, correct_msg)
             print("Send validation-successful message.")
 
-            stpmde_deactivated_msg = open(settings["messages"]["setup_mode_finished"]).readlines()[0] # Setup mode deactivated message
+            stpmde_deactivated_msg = open(settings["messages"]["setup_mode_finished"]).readlines()[
+                0
+            ]  # Setup mode deactivated message
             keyboardmarkup = json.load(open(settings["messages"]["main_keyboardmarkup"]))
-            telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, stpmde_deactivated_msg, keyboardmarkup)
+            telegram.send_msg_keyboard_markup(
+                tele_config, tele_config_uniformly, chat_id_list, stpmde_deactivated_msg, keyboardmarkup
+            )
             print("Send setup-mode-deactivated message and reactivated the main keyboard markup.")
 
         if len(validation_classes["unsuccessful"]) > 0:
-            if len(validation_classes["unsuccessful"]) == 1: # Check for singular or plural
+            if len(validation_classes["unsuccessful"]) == 1:  # Check for singular or plural
                 not_correct_msg = open(settings["messages"]["validation_unsuccessful"]).readlines()[0]
             elif len(validation_classes["unsuccessful"]) > 1:
                 not_correct_msg = open(settings["messages"]["validation_unsuccessful"]).readlines()[1]
@@ -43,7 +47,9 @@ def main(update, user, tele_config, tele_config_uniformly, settings):
             print(f"Could not add {unsuccessful_string} for user {user['user_id']}.")
             not_correct_msg = not_correct_msg.format(unsuccessful_string)
             keyboardmarkup = json.load(open(settings["messages"]["main_keyboardmarkup"]))
-            telegram.send_msg_keyboard_markup(tele_config, tele_config_uniformly, chat_id_list, not_correct_msg, keyboardmarkup)
+            telegram.send_msg_keyboard_markup(
+                tele_config, tele_config_uniformly, chat_id_list, not_correct_msg, keyboardmarkup
+            )
             print("Send validation unsuccessful message.")
 
         user["setup_mode"] = False
