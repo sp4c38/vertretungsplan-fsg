@@ -18,4 +18,4 @@ Why don't just visit the website and read the Vertretungsplan there? Each time y
 Telegram offers a powerful API.
 
 ### A sample output:
-<img alt="Telegram Chat Example" src="https://raw.githubusercontent.com/sp4c38/vertretungsplan-fsg/master/Display_Assets/telegram_chat_example.png" height=750>
+<img alt="Telegram Chat Example" src="https://github.com/sp4c38/vertretungsplan-fsg/blob/master/display_assets/telegram_chat_example.png" height=750>
